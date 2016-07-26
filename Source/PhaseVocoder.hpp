@@ -13,22 +13,25 @@
 #include <memory>
 #include "../JuceLibraryCode/JuceHeader.h"
 
+
+// Phase Vocoder Processing Class
 class PhaseVocoder {
 public:
-
-    PhaseVocoder(int size) :
-            fft_(std::make_unique<FFT>(size, false)), ifft_(std::make_unique<FFT>(size, true)) {};
-
     
-    // Do in place phase vocoder 
-    void operator() (float*);
+    // Constructor
+    PhaseVocoder(int);
     
-
+    // Do processing on an input buffer
+    void process(AudioSampleBuffer&, int);
+    
 private:
     
-    // Smart pointers to forward and inverse FFTs
+    int size_;
+    
+    // Smart pointers to hold FFT classes and input buffer
     std::unique_ptr<FFT> fft_;
     std::unique_ptr<FFT> ifft_;
+    std::unique_ptr<float[]> inputBuffer_;
 };
 
 #endif /* PhaseVocoder_hpp */

@@ -77,8 +77,8 @@ void ShifterAudioProcessor::changeProgramName (int index, const String& newName)
 //==============================================================================
 void ShifterAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    // Use this method as the place to do any pre-playback
-    // initialisation that you need..
+    // Initialize the phase vocoder object to the new size
+    phaseVocoder_.reset(new PhaseVocoder(samplesPerBlock));
 }
 
 void ShifterAudioProcessor::releaseResources()
@@ -126,14 +126,7 @@ void ShifterAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
     for (int i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
-    // This is the place where you'd normally do the guts of your plugin's
-    // audio processing...
-    for (int channel = 0; channel < totalNumInputChannels; ++channel)
-    {
-        float* channelData = buffer.getWritePointer (channel);
-
-        // ..do something to the data...
-    }
+    phaseVocoder_->process(buffer, totalNumInputChannels);
 }
 
 //==============================================================================

@@ -55,10 +55,19 @@ public:
     //==============================================================================
     void getStateInformation (MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
+    
+    int fftGetSize() {return fftSize_;}
 
 private:
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ShifterAudioProcessor)
+    FFT* forward_;
+    FFT* backward_;
+    
+    FFT::Complex* fftInput_;
+    FFT::Complex* fftOutput_;
+    
+    int fftSize_;
 };
 
 

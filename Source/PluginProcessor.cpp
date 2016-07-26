@@ -13,12 +13,17 @@
 
 
 //==============================================================================
-ShifterAudioProcessor::ShifterAudioProcessor()
+ShifterAudioProcessor::ShifterAudioProcessor() :
+    forward_(nullptr), backward_(nullptr), fftInput_(nullptr), fftOutput_(nullptr)
 {
 }
 
 ShifterAudioProcessor::~ShifterAudioProcessor()
 {
+    delete forward_;
+    delete backward_;
+    delete [] fftInput_;
+    delete [] fftOutput_;
 }
 
 //==============================================================================
@@ -79,6 +84,19 @@ void ShifterAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBloc
 {
     // Use this method as the place to do any pre-playback
     // initialisation that you need..
+    fftSize_ = std::log2(samplesPerBlock);
+    
+    // Delete FFT objects if we are re-initializing
+ 
+    delete forward_;
+    delete backward_;
+    
+    forward_ = new FFT(fftSize_, false);
+    backward_ = new FFT(fftSize_, true);
+    
+    fftInput_ = new FFT::Complex[samplesPerBlock];
+    fftOutput_ = new FFT::Complex[samplesPerBlock];
+    
 }
 
 void ShifterAudioProcessor::releaseResources()
@@ -116,7 +134,7 @@ void ShifterAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
 {
     const int totalNumInputChannels  = getTotalNumInputChannels();
     const int totalNumOutputChannels = getTotalNumOutputChannels();
-
+    
     // In case we have more outputs than inputs, this code clears any output
     // channels that didn't contain input data, (because these aren't
     // guaranteed to be empty - they may contain garbage).
@@ -131,8 +149,29 @@ void ShifterAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
     for (int channel = 0; channel < totalNumInputChannels; ++channel)
     {
         float* channelData = buffer.getWritePointer (channel);
-
-        // ..do something to the data...
+        float* frequencyDomain = new float[forward_->getSize() * 2];
+        
+        for (int sample = 0; sample < buffer.getNumSamples(); ++sample) {
+            frequencyDomain[sample] = channelData[sample];
+        }
+        
+        
+        forward_->performRealOnlyForwardTransform(frequencyDomain);
+        
+        for (int bin = 0; bin < forward_->getSize() / 2; ++bin) {
+            frequencyDomain[bin] = 0.0;
+        }
+        
+        backward_->performRealOnlyInverseTransform(frequencyDomain);
+        
+        
+    
+        for (int sample = 0; sample < buffer.getNumSamples(); ++sample) {
+            channelData[sample] = frequencyDomain[sample];
+            
+        }
+        
+        delete [] frequencyDomain;
     }
 }
 

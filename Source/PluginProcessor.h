@@ -12,7 +12,7 @@
 #define PLUGINPROCESSOR_H_INCLUDED
 
 #include "../JuceLibraryCode/JuceHeader.h"
-
+#include <fftw3.h>
 
 //==============================================================================
 /**
@@ -55,6 +55,8 @@ public:
     //==============================================================================
     void getStateInformation (MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
+	using Complex = FFT::Complex;
+
 
 private:
     //==============================================================================

@@ -114,27 +114,80 @@ bool ShifterAudioProcessor::setPreferredBusArrangement (bool isInput, int bus, c
 
 void ShifterAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
 {
-    const int totalNumInputChannels  = getTotalNumInputChannels();
-    const int totalNumOutputChannels = getTotalNumOutputChannels();
 
-    // In case we have more outputs than inputs, this code clears any output
-    // channels that didn't contain input data, (because these aren't
-    // guaranteed to be empty - they may contain garbage).
-    // This is here to avoid people getting screaming feedback
-    // when they first compile a plugin, but obviously you don't need to keep
-    // this code if your algorithm always overwrites all the output channels.
-    for (int i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
-        buffer.clear (i, 0, buffer.getNumSamples());
+		const int totalNumInputChannels = getTotalNumInputChannels();
+		const int totalNumOutputChannels = getTotalNumOutputChannels();
+		const int numSamples = buffer.getNumSamples();
 
-    // This is the place where you'd normally do the guts of your plugin's
-    // audio processing...
-    for (int channel = 0; channel < totalNumInputChannels; ++channel)
-    {
-        float* channelData = buffer.getWritePointer (channel);
+		// In case we have more outputs than inputs, this code clears any output
+		// channels that didn't contain input data, (because these aren't
+		// guaranteed to be empty - they may contain garbage).
+		// This is here to avoid people getting screaming feedback
+		// when they first compile a plugin, but obviously you don't need to keep
+		// this code if your algorithm always overwrites all the output channels.
+		for (int i = totalNumInputChannels; i < totalNumOutputChannels; ++i) {
+			buffer.clear(i, 0, buffer.getNumSamples());
+		}
+		//buffer.clear(,,)
+		//buffer.applyGain(gain);
 
-        // ..do something to the data...
-    }
+		// This is the place where you'd normally do the guts of your plugin's
+		// audio processing...
+
+		for (int channel = 0; channel < totalNumInputChannels; ++channel)
+		{
+			const float* in = buffer.getReadPointer(channel, 0); //there exists getReadPointer(channel,sampleIndex)
+			float* out = buffer.getWritePointer(channel);
+
+			FFT forwardFFT(log2(numSamples), false);//(log2(buffer.getNumSamples()),false);
+			FFT backwardFFT(log2(numSamples), true);//(log2(buffer.getNumSamples()), true);
+
+													//const int thisSize = buffer.getNumSamples();
+
+			std::vector<Complex> input;
+			std::vector<Complex> output;
+			std::vector<Complex> result;
+
+			//std::array<Complex, 1> input;
+			//std::array<Complex, 1> output;
+			//std::array<Complex, 1> result;
+
+			//for (int k = 0; k<buffer.getNumSamples(); k+=numSamples) { 
+
+
+			for (int m = 0; m < numSamples; ++m) { // forwardFFT.getSize(); ++m) {
+				Complex temp;
+				temp.r = in[m];
+				temp.i = 0;
+
+				input.push_back(temp);
+				output.push_back(temp);
+				result.push_back(temp);
+				//input[m].r = in[m];
+				//input[m].i = 0;
+
+			}
+
+			forwardFFT.perform(input.data(), output.data()); //fft result stored in output
+
+															 //create the complex valued result, by setting the FFT to have zero phase
+			for (int m = 0; m < numSamples; ++m) {// forwardFFT.getSize(); ++m) {
+				output[m].r = output[m].r; //stays the same
+				output[m].i = 0;           //set imaginary part to zero 	     
+			}
+
+			backwardFFT.perform(output.data(), result.data()); //time domain result stored in result
+
+															   //put it in the correct location in the out
+			for (int m = 0; m < numSamples; ++m) {// forwardFFT.getSize(); ++m) {
+				out[m] = result[m].r / (float)numSamples;	//feed the time domain samples to the correct position      
+															//use aproppriate writePointer in channelData (should write 1024 times)
+			}
+
+		}
+
 }
+
 
 //==============================================================================
 bool ShifterAudioProcessor::hasEditor() const

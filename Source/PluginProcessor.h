@@ -64,17 +64,19 @@ private:
     // Array holding the samples for even-numbered windows taken from the input.
     // Since samples from more than one block will be used, we need a buffer to
     // store them before processing.
-    Array<Array<double>> overlapWindowBuffers_;
+    
+    
+    AudioBuffer<float>* overlapWindowBuffer_;
 
     // Array holding buffers for taking the FFT of overlap windows.
-    Array<Array<double>> overlapFftBuffers_;
+    AudioBuffer<float>* overlapFftBuffer_;
 
     // Array holding buffers for taking the FFT of the current block.
-    Array<Array<double>> blockFftBuffers_;
+    AudioBuffer<float>* blockFftBuffer_;
 
     // Buffer to hold the Hamming window. This will be initialized in
     // prepareToPlay.
-    Array<double> windowFunction_;
+    AudioBuffer<float>* windowFunction_;
 
     int windowLength_;
 

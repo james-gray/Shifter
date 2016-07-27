@@ -89,35 +89,21 @@ void ShifterAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBloc
     ifft_ = new FFT(fftSize_, /* isInverse */ true);
 
     // Allocate storage for FFT, overlap and window buffers.
-    overlapFftBuffers_.ensureStorageAllocated(totalNumInputChannels);
-    blockFftBuffers_.ensureStorageAllocated(totalNumInputChannels);
-    overlapWindowBuffers_.ensureStorageAllocated(totalNumInputChannels);
-    windowFunction_.ensureStorageAllocated(samplesPerBlock);
-
-    // Allocate storage for each channel's overlap/block FFT buffers and zero out
-    for (int i = 0; i < totalNumInputChannels; ++i) {
-        overlapFftBuffers_[i].ensureStorageAllocated(samplesPerBlock * 2);
-        blockFftBuffers_[i].ensureStorageAllocated(samplesPerBlock * 2);
-
-        for (int j = 0; j < samplesPerBlock * 2; ++j) {
-            overlapFftBuffers_[i].set(i, 0.0);
-            blockFftBuffers_[i].set(i, 0.0);
-        }
-    }
-
-    // Allocate storage for each channel's overlap buffer and zero the buffer out
-    for (auto buffer : overlapWindowBuffers_) {
-        buffer.ensureStorageAllocated(samplesPerBlock);
-
-        for (int i = 0; i < samplesPerBlock; ++i) {
-            buffer.set(i, 0.0);
-        }
-    }
-
+    overlapWindowBuffer_ = new AudioBuffer<float>(totalNumInputChannels, samplesPerBlock);
+    overlapFftBuffer_ = new AudioBuffer<float>(totalNumInputChannels, samplesPerBlock * 2);
+    blockFftBuffer_ = new AudioBuffer<float>(totalNumInputChannels, samplesPerBlock * 2);
+    
+    windowFunction_ = new AudioBuffer<float>(1, samplesPerBlock);
+    
+    //zero out
+    overlapWindowBuffer_->clear();
+    overlapFftBuffer_->clear();
+    blockFftBuffer_->clear();
+    
     // Set up the Hamming window buffer
     windowLength_ = samplesPerBlock;
     for (int i = 0; i < windowLength_; ++i) {
-        windowFunction_.set(i, 0.54 - 0.46 * cos(2.0 * M_PI * (double) i / windowLength_));
+        windowFunction_->setSample(0, i, 0.54 - 0.46 * cos(2.0 * M_PI * (double) i / windowLength_));
     }
 }
 
@@ -178,9 +164,10 @@ void ShifterAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
 
         // Raw pointers to the overlap buffer and FFT buffers for the current
         // channel.
-        double* overlapBuffer = overlapWindowBuffers_[channel].getRawDataPointer();
-        double* overlapFft = overlapFftBuffers_[channel].getRawDataPointer();
-        double* blockFft = blockFftBuffers_[channel].getRawDataPointer();
+        float* overlapBuffer = overlapWindowBuffer_->getWritePointer(channel);
+        float* overlapFft = overlapFftBuffer_->getWritePointer(channel);
+        float* blockFft = blockFftBuffer_->getWritePointer(channel);
+        const float* windowFunction = windowFunction_->getReadPointer(0);
 
         // Store the first half of this block in the second half of the overlap
         // buffer. This will ensure the overlap buffer is full.
@@ -191,14 +178,15 @@ void ShifterAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
         // Apply the window function to the current block AND to the overlap
         // buffer, before staging these buffers' contents in their respective
         // FFTs.
+        
         for (int i = 0; i < windowLength_; ++i) {
-            overlapFft[i] = overlapBuffer[i] * windowFunction_[i];
-            blockFft[i] = channelData[i] * windowFunction_[i];
+            overlapFft[i] = overlapBuffer[i] * windowFunction[i];
+            blockFft[i] = channelData[i] * windowFunction[i];
         }
 
         // Take the FFT of the overlap buffer AND the current block.
-        fft_->performRealOnlyForwardTransform((float *) overlapFft);
-        fft_->performRealOnlyForwardTransform((float *) blockFft);
+        fft_->performRealOnlyForwardTransform(overlapFft);
+        fft_->performRealOnlyForwardTransform(blockFft);
 
         // Store the second half of the current block in the overlap buffer to
         // be processed in the next iteration of processBlock.

@@ -56,9 +56,32 @@ public:
     void getStateInformation (MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
+    int fftGetSize() { return fftSize_; }
+
 private:
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ShifterAudioProcessor)
+    // Array holding the samples for even-numbered windows taken from the input.
+    // Since samples from more than one block will be used, we need a buffer to
+    // store them before processing.
+    Array<Array<double>> overlapWindowBuffers_;
+
+    // Array holding buffers for taking the FFT of overlap windows.
+    Array<Array<double>> overlapFftBuffers_;
+
+    // Array holding buffers for taking the FFT of the current block.
+    Array<Array<double>> blockFftBuffers_;
+
+    // Buffer to hold the Hamming window. This will be initialized in
+    // prepareToPlay.
+    Array<double> windowFunction_;
+
+    int windowLength_;
+
+    FFT* fft_;
+    FFT* ifft_;
+
+    int fftSize_;
 };
 
 

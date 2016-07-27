@@ -13,7 +13,7 @@
 
 
 //==============================================================================
-ShifterAudioProcessor::ShifterAudioProcessor()
+ShifterAudioProcessor::ShifterAudioProcessor() 
 {
 }
 

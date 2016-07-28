@@ -12,6 +12,8 @@
 #define PLUGINPROCESSOR_H_INCLUDED
 
 #include "../JuceLibraryCode/JuceHeader.h"
+#include <vector>
+#include <algorithm>
 
 
 //==============================================================================
@@ -58,13 +60,8 @@ public:
     void setStateInformation (const void* data, int sizeInBytes) override;
     
     int fftGetSize() {return fftSize_;}
-    void initialize2DPhaseArray(float**&);
-    void delete2DPhaseArray(float**);
     void adjustPhaseForPitchShift(float*, int);
     float princArg(float);
-    
-    
-    
 
 private:
     //==============================================================================
@@ -95,9 +92,9 @@ private:
 
     int fftSize_;
     
-    // Frequency Domain Variables
-    float** prevAbsolutePhase_;
-    float** prevAdjustedPhase_;
+    // Vectors for storing phase information for each bin corresponding to a channel
+    std::vector<std::vector<float>> prevAbsolutePhase_;
+    std::vector<std::vector<float>> prevAdjustedPhase_;
 
     
     // Output buffer

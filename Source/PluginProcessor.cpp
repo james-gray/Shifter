@@ -21,8 +21,6 @@ ShifterAudioProcessor::~ShifterAudioProcessor()
 {
     delete fft_;
     delete ifft_;
-    delete2DPhaseArray(prevAdjustedPhase_);
-    delete2DPhaseArray(prevAbsolutePhase_);
 }
 
 //==============================================================================
@@ -112,11 +110,11 @@ void ShifterAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBloc
         windowFunction_->setSample(0, i, 0.54 - 0.46 * cos(2.0 * M_PI * (double) i / windowLength_));
     }
 
-    // 2D Array for storing phase from previous block for each channel,
-    // initialize to 0
-    // TODO: Create deconstructors for these
-    initialize2DPhaseArray(prevAbsolutePhase_);
-    initialize2DPhaseArray(prevAdjustedPhase_);
+    // 2D Array for storing phase from previous block for each channel, initialize to 0
+    for (int i = 0; i < totalNumInputChannels; ++i) {
+        prevAbsolutePhase_.push_back(std::vector<float>(windowLength_, 0.0));
+        prevAdjustedPhase_.push_back(std::vector<float>(windowLength_, 0.0));
+    }
 }
 
 void ShifterAudioProcessor::releaseResources()
@@ -219,24 +217,6 @@ void ShifterAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
     }
 }
 
-void ShifterAudioProcessor::initialize2DPhaseArray(float**& array) {
-    const int totalNumInputChannels = getTotalNumInputChannels();
-
-    array = new float*[totalNumInputChannels];
-    for (int i = 0; i < totalNumInputChannels; ++i) {
-        array[i] = new float[windowLength_];
-        for (int j = 0; j < windowLength_; j++) {
-            array[i][j] = 0;
-        }
-    }
-}
-
-void ShifterAudioProcessor::delete2DPhaseArray(float** array) {
-    for(int i = 0; i < getTotalNumInputChannels(); ++i) {
-        delete [] array[i];
-    }
-    delete [] array;
-}
 
 void ShifterAudioProcessor::adjustPhaseForPitchShift(float* fft, int channel) {
     for (int i = 0, fftIndex; i < windowLength_; ++i, fftIndex = i * 2) {

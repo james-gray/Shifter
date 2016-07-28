@@ -108,6 +108,7 @@ void ShifterAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBloc
     shiftRatio_ = 1.0;
 
     //zero out
+    outputBuffer_->clear();
     overlapWindowBuffer_->clear();
     overlapFftBuffer_->clear();
     blockFftBuffer_->clear();

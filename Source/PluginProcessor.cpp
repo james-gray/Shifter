@@ -231,11 +231,11 @@ void ShifterAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
         // Write to output buffer
         /* Figure out how far we need to go in this loop (i.e. (reinterpolated window length * 2) - overlapLength */
         for (int i = 0; i < windowLength_ ; ++i) {
-            outputBuffer[i] += (overlapFft[i] * windowFunction[i]);
+            outputBuffer[i] += overlapFft[i];
             
             // Specifically for the 1/2 hop size case (no pitch shifting)
             if (i >= analysisHopSize_) {
-                outputBuffer[i] += (blockFft[i - analysisHopSize_] * windowFunction[i - analysisHopSize_]);
+                outputBuffer[i] += blockFft[i - analysisHopSize_];
              }
         }
         
@@ -247,7 +247,7 @@ void ShifterAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
         // Save new output buffer
         outputBuffer_->clear(channel, 0, numSamples);
         for (int i = 0; i < analysisHopSize_; ++i) {
-            outputBuffer[i] = (blockFft[i + analysisHopSize_] * windowFunction[i + analysisHopSize_]);
+            outputBuffer[i] = blockFft[i + analysisHopSize_];
         }
 
         // Clear the FFT buffers to remove FFT garbage

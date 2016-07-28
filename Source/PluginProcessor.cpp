@@ -94,24 +94,24 @@ void ShifterAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBloc
     overlapWindowBuffer_ = new AudioBuffer<float>(totalNumInputChannels, samplesPerBlock);
     overlapFftBuffer_ = new AudioBuffer<float>(totalNumInputChannels, samplesPerBlock * 2);
     blockFftBuffer_ = new AudioBuffer<float>(totalNumInputChannels, samplesPerBlock * 2);
-    
+
     windowFunction_ = new AudioBuffer<float>(1, samplesPerBlock);
 
     // Initial pitch adjustment ratio
     analysisHopSize_ = samplesPerBlock / 2;
     shiftRatio_ = 1.0;
-    
+
     //zero out
     overlapWindowBuffer_->clear();
     overlapFftBuffer_->clear();
     blockFftBuffer_->clear();
-    
+
     // Set up the Hamming window buffer
     windowLength_ = samplesPerBlock;
     for (int i = 0; i < windowLength_; ++i) {
         windowFunction_->setSample(0, i, 0.54 - 0.46 * cos(2.0 * M_PI * (double) i / windowLength_));
     }
-    
+
     // 2D Array for storing phase from previous block for each channel,
     // initialize to 0
     // TODO: Create deconstructors for these
@@ -255,7 +255,7 @@ void ShifterAudioProcessor::adjustPhaseForPitchShift(float* fft, int channel) {
         // Store the previous absolute and adjusted phases for the next hop
         prevAbsolutePhase_[channel][i] = phase;
         prevAdjustedPhase_[channel][i] = princArg(prevAdjustedPhase_[channel][i] +
-            deviationPhase * shiftRatio_ * analysisHopSize_);
+            deviationPhase * (shiftRatio_ * analysisHopSize_));
 
         // Convert back to real/imaginary form
         fft[fftIndex] = amplitude * cos(prevAdjustedPhase_[channel][i]);

@@ -105,6 +105,13 @@ void ShifterAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBloc
     for (int i = 0; i < windowLength_; ++i) {
         windowFunction_->setSample(0, i, 0.54 - 0.46 * cos(2.0 * M_PI * (double) i / windowLength_));
     }
+    
+    // Array for storing phase from previous block, initialize to 0
+    *prevPhase_ = new float[totalNumInputChannels];
+        
+    for (int i = 0; i < windowLength_; ++i) {
+        prevPhase_[i] = 0.0;
+    }
 }
 
 void ShifterAudioProcessor::releaseResources()
@@ -138,6 +145,7 @@ bool ShifterAudioProcessor::setPreferredBusArrangement (bool isInput, int bus, c
 }
 #endif
 
+
 void ShifterAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
 {
     const int totalNumInputChannels  = getTotalNumInputChannels();
@@ -155,6 +163,7 @@ void ShifterAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
     }
 
     for (int channel = 0; channel < totalNumInputChannels; ++channel) {
+
         // ***************
         // * INPUT STAGE *
         // ***************
@@ -178,7 +187,6 @@ void ShifterAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
         // Apply the window function to the current block AND to the overlap
         // buffer, before staging these buffers' contents in their respective
         // FFTs.
-        
         for (int i = 0; i < windowLength_; ++i) {
             overlapFft[i] = overlapBuffer[i] * windowFunction[i];
             blockFft[i] = channelData[i] * windowFunction[i];
@@ -197,12 +205,34 @@ void ShifterAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
         // **************************
         // * PHASE PROCESSING STAGE *
         // **************************
-        // TODO
+        
+        // Phase calculations for overlap buffer
+        for (int i = 0; i < windowLength_ * 2; i += 2) {
+            double re = overlapFft[i];
+            double im = overlapFft[i + 1];
+            double amplitude = sqrt((re * re) + (im * im));
+            double phase = atan2(im, re);
+            
+            double frequency = 2.0 * M_PI * (static_cast<double>(i) / windowLength_);
+            double deltaPhi = (frequency * (numSamples / 2)) + princArg(phase - prevPhase_[i])
+        }
+        
+        
 
         // ****************
         // * OUTPUT STAGE *
         // ****************
         // TODO
+    }
+}
+
+// Principal argument
+double ShifterAudioProcessor::princArg(double phase)
+{
+    if (phase >= 0) {
+        return std::fmod(phase + M_PI, 2 * M_PI) - M_PI;
+    } else {
+        return std::fmod(phase + M_PI, -2 * M_PI) + M_PI;
     }
 }
 

@@ -33,6 +33,7 @@ public:
    #endif
 
     void processBlock (AudioSampleBuffer&, MidiBuffer&) override;
+    void convertToPolar(float*, int);
 
     //==============================================================================
     AudioProcessorEditor* createEditor() override;
@@ -55,8 +56,12 @@ public:
     //==============================================================================
     void getStateInformation (MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
-
-    int fftGetSize() { return fftSize_; }
+    
+    int fftGetSize() {return fftSize_;}
+    double princArg(double);
+    
+    
+    
 
 private:
     //==============================================================================
@@ -84,6 +89,13 @@ private:
     FFT* ifft_;
 
     int fftSize_;
+    
+    // Frequency Domain Variables
+    float** prevPhase_;
+    
+    
+    // Output buffer
+    AudioBuffer<float>* outputBuffer_;
 };
 
 

@@ -116,7 +116,7 @@ void ShifterAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBloc
     // Set up the Hamming window buffer
     windowLength_ = samplesPerBlock;
     for (int i = 0; i < windowLength_; ++i) {
-        windowFunction_->setSample(0, i, 0.54 - 0.46 * cos(2.0 * M_PI * (double) i / windowLength_));
+        windowFunction_->setSample(0, i, 0.54 - 0.46 * cos(2.0 * M_PI * (float) i / windowLength_));
     }
 
     // 2D Array for storing phase from previous block for each channel, initialize to 0

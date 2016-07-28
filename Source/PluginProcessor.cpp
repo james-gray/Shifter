@@ -239,16 +239,20 @@ void ShifterAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
              }
         }
         
-        //Output to stream
+        // Output to stream
         for (int i = 0; i < numSamples; ++i) {
             channelData[i] = outputBuffer[i];
         }
         
         // Save new output buffer
-        outputBuffer_->clear();
-        for (int i = analysisHopSize_; i < windowLength_; ++i) {
-            outputBuffer[i - analysisHopSize_] = (blockFft[i] * windowFunction[i]);
+        outputBuffer_->clear(channel, 0, numSamples);
+        for (int i = 0; i < analysisHopSize_; ++i) {
+            outputBuffer[i] = (blockFft[i + analysisHopSize_] * windowFunction[i + analysisHopSize_]);
         }
+
+        // Clear the FFT buffers to remove FFT garbage
+        overlapFftBuffer_->clear();
+        blockFftBuffer_->clear();
     }
 }
 

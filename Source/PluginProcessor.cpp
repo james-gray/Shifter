@@ -217,8 +217,8 @@ void ShifterAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
         // **************************
         // * PHASE PROCESSING STAGE *
         // **************************
-        //adjustPhaseForPitchShift(overlapFft, channel);
-        //adjustPhaseForPitchShift(blockFft, channel);
+        adjustPhaseForPitchShift(overlapFft, channel);
+        adjustPhaseForPitchShift(blockFft, channel);
 
         // ****************
         // * OUTPUT STAGE *
@@ -265,16 +265,15 @@ void ShifterAudioProcessor::adjustPhaseForPitchShift(float* fft, int channel) {
         float phase = atan2(im, re);
 
         // Calculate the frequency of this bin
-        float frequency = 2.0 * M_PI * (static_cast<float>(i) / windowLength_);
-        float normFrequency = (frequency * analysisHopSize_);
+        float frequency = 2.0 * M_PI * static_cast<float>(i) * analysisHopSize_ / windowLength_;;
 
         // Calculate the phase deviation for this hop
-        float deviationPhase = (normFrequency + princArg(phase - prevAbsolutePhase_[channel][i] - normFrequency));
+        float deviationPhase = frequency + princArg(phase - prevAbsolutePhase_[channel][i] - frequency);
 
         // Store the previous absolute and adjusted phases for the next hop
         prevAbsolutePhase_[channel][i] = phase;
         prevAdjustedPhase_[channel][i] = princArg(prevAdjustedPhase_[channel][i] +
-            deviationPhase * (shiftRatio_ * analysisHopSize_));
+            (deviationPhase * shiftRatio_));
 
         // Convert back to real/imaginary form
         fft[fftIndex] = amplitude * cos(prevAdjustedPhase_[channel][i]);

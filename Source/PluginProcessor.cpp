@@ -231,7 +231,7 @@ void ShifterAudioProcessor::initialize2DPhaseArray(float**& array) {
     }
 }
 
-void ShifterAudioProcessor::delete2DPhaseArray(float**& array) {
+void ShifterAudioProcessor::delete2DPhaseArray(float** array) {
     for(int i = 0; i < getTotalNumInputChannels(); ++i) {
         delete [] array[i];
     }
@@ -239,9 +239,9 @@ void ShifterAudioProcessor::delete2DPhaseArray(float**& array) {
 }
 
 void ShifterAudioProcessor::adjustPhaseForPitchShift(float* fft, int channel) {
-    for (int i = 0; i < windowLength_ * 2; i += 2) {
-        float re = fft[i];
-        float im = fft[i + 1];
+    for (int i = 0, fftIndex; i < windowLength_; ++i, fftIndex = i * 2) {
+        float re = fft[fftIndex];
+        float im = fft[fftIndex + 1];
         float amplitude = sqrt((re * re) + (im * im));
         float phase = atan2(im, re);
 
@@ -258,8 +258,8 @@ void ShifterAudioProcessor::adjustPhaseForPitchShift(float* fft, int channel) {
             deviationPhase * shiftRatio_ * analysisHopSize_);
 
         // Convert back to real/imaginary form
-        fft[i] = amplitude * cos(prevAdjustedPhase_[channel][i]);
-        fft[i + 1] = amplitude * sin(prevAdjustedPhase_[channel][i]);
+        fft[fftIndex] = amplitude * cos(prevAdjustedPhase_[channel][i]);
+        fft[fftIndex + 1] = amplitude * sin(prevAdjustedPhase_[channel][i]);
     }
 }
 

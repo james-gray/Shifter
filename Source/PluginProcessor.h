@@ -59,7 +59,7 @@ public:
     
     int fftGetSize() {return fftSize_;}
     void initialize2DPhaseArray(float**&);
-    void delete2DPhaseArray(float**&);
+    void delete2DPhaseArray(float**);
     void adjustPhaseForPitchShift(float*, int);
     float princArg(float);
     

@@ -58,7 +58,10 @@ public:
     void setStateInformation (const void* data, int sizeInBytes) override;
     
     int fftGetSize() {return fftSize_;}
-    double princArg(double);
+    void initialize2DPhaseArray(float**&);
+    void delete2DPhaseArray(float**&);
+    void adjustPhaseForPitchShift(float*, int);
+    float princArg(float);
     
     
     
@@ -84,6 +87,8 @@ private:
     AudioBuffer<float>* windowFunction_;
 
     int windowLength_;
+    int analysisHopSize_;
+    float shiftRatio_;
 
     FFT* fft_;
     FFT* ifft_;
@@ -91,8 +96,9 @@ private:
     int fftSize_;
     
     // Frequency Domain Variables
-    float** prevPhase_;
-    
+    float** prevAbsolutePhase_;
+    float** prevAdjustedPhase_;
+
     
     // Output buffer
     AudioBuffer<float>* outputBuffer_;

@@ -21,6 +21,8 @@ ShifterAudioProcessor::~ShifterAudioProcessor()
 {
     delete fft_;
     delete ifft_;
+    delete2DPhaseArray(prevAdjustedPhase_);
+    delete2DPhaseArray(prevAbsolutePhase_);
 }
 
 //==============================================================================
@@ -94,6 +96,10 @@ void ShifterAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBloc
     blockFftBuffer_ = new AudioBuffer<float>(totalNumInputChannels, samplesPerBlock * 2);
     
     windowFunction_ = new AudioBuffer<float>(1, samplesPerBlock);
+
+    // Initial pitch adjustment ratio
+    analysisHopSize_ = samplesPerBlock / 2;
+    shiftRatio_ = 1.0;
     
     //zero out
     overlapWindowBuffer_->clear();
@@ -106,12 +112,11 @@ void ShifterAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBloc
         windowFunction_->setSample(0, i, 0.54 - 0.46 * cos(2.0 * M_PI * (double) i / windowLength_));
     }
     
-    // Array for storing phase from previous block, initialize to 0
-    *prevPhase_ = new float[totalNumInputChannels];
-        
-    for (int i = 0; i < windowLength_; ++i) {
-        prevPhase_[i] = 0.0;
-    }
+    // 2D Array for storing phase from previous block for each channel,
+    // initialize to 0
+    // TODO: Create deconstructors for these
+    initialize2DPhaseArray(prevAbsolutePhase_);
+    initialize2DPhaseArray(prevAdjustedPhase_);
 }
 
 void ShifterAudioProcessor::releaseResources()
@@ -144,7 +149,6 @@ bool ShifterAudioProcessor::setPreferredBusArrangement (bool isInput, int bus, c
     return AudioProcessor::setPreferredBusArrangement (isInput, bus, preferredSet);
 }
 #endif
-
 
 void ShifterAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
 {
@@ -205,19 +209,8 @@ void ShifterAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
         // **************************
         // * PHASE PROCESSING STAGE *
         // **************************
-        
-        // Phase calculations for overlap buffer
-        for (int i = 0; i < windowLength_ * 2; i += 2) {
-            double re = overlapFft[i];
-            double im = overlapFft[i + 1];
-            double amplitude = sqrt((re * re) + (im * im));
-            double phase = atan2(im, re);
-            
-            double frequency = 2.0 * M_PI * (static_cast<double>(i) / windowLength_);
-            double deltaPhi = (frequency * (numSamples / 2)) + princArg(phase - prevPhase_[i])
-        }
-        
-        
+        adjustPhaseForPitchShift(overlapFft, channel);
+        adjustPhaseForPitchShift(blockFft, channel);
 
         // ****************
         // * OUTPUT STAGE *
@@ -226,8 +219,52 @@ void ShifterAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
     }
 }
 
+void ShifterAudioProcessor::initialize2DPhaseArray(float**& array) {
+    const int totalNumInputChannels = getTotalNumInputChannels();
+
+    array = new float*[totalNumInputChannels];
+    for (int i = 0; i < totalNumInputChannels; ++i) {
+        array[i] = new float[windowLength_];
+        for (int j = 0; j < windowLength_; j++) {
+            array[i][j] = 0;
+        }
+    }
+}
+
+void ShifterAudioProcessor::delete2DPhaseArray(float**& array) {
+    for(int i = 0; i < getTotalNumInputChannels(); ++i) {
+        delete [] array[i];
+    }
+    delete [] array;
+}
+
+void ShifterAudioProcessor::adjustPhaseForPitchShift(float* fft, int channel) {
+    for (int i = 0; i < windowLength_ * 2; i += 2) {
+        float re = fft[i];
+        float im = fft[i + 1];
+        float amplitude = sqrt((re * re) + (im * im));
+        float phase = atan2(im, re);
+
+        // Calculate the frequency of this bin
+        float frequency = 2.0 * M_PI * (static_cast<float>(i) / windowLength_);
+        float normFrequency = (frequency * analysisHopSize_);
+
+        // Calculate the phase deviation for this hop
+        float deviationPhase = (normFrequency + princArg(phase - prevAbsolutePhase_[channel][i] - normFrequency));
+
+        // Store the previous absolute and adjusted phases for the next hop
+        prevAbsolutePhase_[channel][i] = phase;
+        prevAdjustedPhase_[channel][i] = princArg(prevAdjustedPhase_[channel][i] +
+            deviationPhase * shiftRatio_ * analysisHopSize_);
+
+        // Convert back to real/imaginary form
+        fft[i] = amplitude * cos(prevAdjustedPhase_[channel][i]);
+        fft[i + 1] = amplitude * sin(prevAdjustedPhase_[channel][i]);
+    }
+}
+
 // Principal argument
-double ShifterAudioProcessor::princArg(double phase)
+float ShifterAudioProcessor::princArg(float phase)
 {
     if (phase >= 0) {
         return std::fmod(phase + M_PI, 2 * M_PI) - M_PI;

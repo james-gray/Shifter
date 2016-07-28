@@ -13,14 +13,22 @@
 
 
 //==============================================================================
-ShifterAudioProcessor::ShifterAudioProcessor() : fft_(nullptr), ifft_(nullptr)
+ShifterAudioProcessor::ShifterAudioProcessor() :
+    overlapWindowBuffer_(nullptr), overlapFftBuffer_(nullptr),
+    blockFftBuffer_(nullptr), windowFunction_(nullptr),
+    fft_(nullptr), ifft_(nullptr), outputBuffer_(nullptr)
 {
 }
 
 ShifterAudioProcessor::~ShifterAudioProcessor()
 {
-    delete fft_;
+    delete outputBuffer_;
     delete ifft_;
+    delete fft_;
+    delete windowFunction_;
+    delete blockFftBuffer_;
+    delete overlapFftBuffer_;
+    delete overlapWindowBuffer_;
 }
 
 //==============================================================================
@@ -92,7 +100,6 @@ void ShifterAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBloc
     overlapWindowBuffer_ = new AudioBuffer<float>(totalNumInputChannels, samplesPerBlock);
     overlapFftBuffer_ = new AudioBuffer<float>(totalNumInputChannels, samplesPerBlock * 2);
     blockFftBuffer_ = new AudioBuffer<float>(totalNumInputChannels, samplesPerBlock * 2);
-
     windowFunction_ = new AudioBuffer<float>(1, samplesPerBlock);
 
     // Initial pitch adjustment ratio
@@ -112,8 +119,8 @@ void ShifterAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBloc
 
     // 2D Array for storing phase from previous block for each channel, initialize to 0
     for (int i = 0; i < totalNumInputChannels; ++i) {
-        prevAbsolutePhase_.push_back(std::vector<float>(windowLength_, 0.0));
-        prevAdjustedPhase_.push_back(std::vector<float>(windowLength_, 0.0));
+        prevAbsolutePhase_.emplace_back(windowLength_, 0.0);
+        prevAdjustedPhase_.emplace_back(windowLength_, 0.0);
     }
 }
 

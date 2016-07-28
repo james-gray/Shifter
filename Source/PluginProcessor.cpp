@@ -192,8 +192,8 @@ void ShifterAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
 
         // Store the first half of this block in the second half of the overlap
         // buffer. This will ensure the overlap buffer is full.
-        for (int i = 0; i < numSamples / 2; ++i) {
-            overlapBuffer[i + (numSamples / 2)] = channelData[i];
+        for (int i = 0; i < analysisHopSize_; ++i) {
+            overlapBuffer[i + analysisHopSize_] = channelData[i];
         }
 
         // Apply the window function to the current block AND to the overlap
@@ -210,8 +210,8 @@ void ShifterAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
 
         // Store the second half of the current block in the overlap buffer to
         // be processed in the next iteration of processBlock.
-        for (int i = 0; i < numSamples / 2; ++i) {
-            overlapBuffer[i] = channelData[i + (numSamples / 2)];
+        for (int i = 0; i < analysisHopSize_; ++i) {
+            overlapBuffer[i] = channelData[i + analysisHopSize_];
         }
 
         // **************************

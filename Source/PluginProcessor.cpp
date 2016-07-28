@@ -101,6 +101,7 @@ void ShifterAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBloc
     overlapFftBuffer_ = new AudioBuffer<float>(totalNumInputChannels, samplesPerBlock * 2);
     blockFftBuffer_ = new AudioBuffer<float>(totalNumInputChannels, samplesPerBlock * 2);
     windowFunction_ = new AudioBuffer<float>(1, samplesPerBlock);
+    outputBuffer_ = new AudioBuffer<float>(totalNumInputChannels, samplesPerBlock);
 
     // Initial pitch adjustment ratio
     analysisHopSize_ = samplesPerBlock / 2;
@@ -185,6 +186,7 @@ void ShifterAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
         float* overlapBuffer = overlapWindowBuffer_->getWritePointer(channel);
         float* overlapFft = overlapFftBuffer_->getWritePointer(channel);
         float* blockFft = blockFftBuffer_->getWritePointer(channel);
+        float* outputBuffer = outputBuffer_->getWritePointer(channel);
         const float* windowFunction = windowFunction_->getReadPointer(0);
 
         // Store the first half of this block in the second half of the overlap
@@ -214,13 +216,38 @@ void ShifterAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
         // **************************
         // * PHASE PROCESSING STAGE *
         // **************************
-        adjustPhaseForPitchShift(overlapFft, channel);
-        adjustPhaseForPitchShift(blockFft, channel);
+        //adjustPhaseForPitchShift(overlapFft, channel);
+        //adjustPhaseForPitchShift(blockFft, channel);
 
         // ****************
         // * OUTPUT STAGE *
         // ****************
-        // TODO
+        ifft_->performRealOnlyInverseTransform(overlapFft);
+        ifft_->performRealOnlyInverseTransform(blockFft);
+        
+        // Re interpolate
+        
+        // Write to output buffer
+        /* Figure out how far we need to go in this loop (i.e. (reinterpolated window length * 2) - overlapLength */
+        for (int i = 0; i < windowLength_ ; ++i) {
+            outputBuffer[i] += (overlapFft[i] * windowFunction[i]);
+            
+            // Specifically for the 1/2 hop size case (no pitch shifting)
+            if (i >= analysisHopSize_) {
+                outputBuffer[i] += (blockFft[i - analysisHopSize_] * windowFunction[i - analysisHopSize_]);
+             }
+        }
+        
+        //Output to stream
+        for (int i = 0; i < numSamples; ++i) {
+            channelData[i] = outputBuffer[i];
+        }
+        
+        // Save new output buffer
+        outputBuffer_->clear();
+        for (int i = analysisHopSize_; i < windowLength_; ++i) {
+            outputBuffer[i - analysisHopSize_] = (blockFft[i] * windowFunction[i]);
+        }
     }
 }
 

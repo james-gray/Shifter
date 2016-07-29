@@ -10,6 +10,9 @@
               pluginRTASCategory="" aaxIdentifier="com.jjh.Shifter" pluginAAXCategory="AAX_ePlugInCategory_Dynamics"
               jucerVersion="4.2.3" companyName="JJH">
   <MAINGROUP id="bcW8Wc" name="Shifter">
+    <GROUP id="{9878FC32-2357-2B96-FEEA-0C535E696F5B}" name="Resources">
+      <FILE id="ihWmYR" name="dv_helmet.png" compile="0" resource="1" file="Resources/dv_helmet.png"/>
+    </GROUP>
     <GROUP id="{E4DF3F15-A2C4-4451-D2D1-21C533BF85AD}" name="Source">
       <FILE id="mpBiKE" name="PluginProcessor.cpp" compile="1" resource="0"
             file="Source/PluginProcessor.cpp"/>
@@ -19,12 +22,9 @@
             file="Source/PluginEditor.cpp"/>
       <FILE id="bKlq9C" name="PluginEditor.h" compile="0" resource="0" file="Source/PluginEditor.h"/>
     </GROUP>
-    <GROUP id="{9878FC32-2357-2B96-FEEA-0C535E696F5B}" name="Resources">
-      <FILE id="npQUcA" name="dv_helmet.png" compile="0" resource="1" file="../dv_helmet.png"/>
-    </GROUP>
   </MAINGROUP>
   <EXPORTFORMATS>
-    <XCODE_MAC targetFolder="Builds/MacOSX">
+    <XCODE_MAC targetFolder="Builds/MacOSX" vstFolder="">
       <CONFIGURATIONS>
         <CONFIGURATION name="Debug" isDebug="1" optimisation="1" targetName="Shifter"/>
         <CONFIGURATION name="Release" isDebug="0" optimisation="3" targetName="Shifter"/>
@@ -46,7 +46,7 @@
         <MODULEPATH id="juce_audio_plugin_client" path="../../../Libraries/JUCE/modules"/>
       </MODULEPATHS>
     </XCODE_MAC>
-    <VS2015 targetFolder="Builds/VisualStudio2015">
+    <VS2015 targetFolder="Builds/VisualStudio2015" vstFolder="">
       <CONFIGURATIONS>
         <CONFIGURATION name="Debug" winWarningLevel="4" generateManifest="1" winArchitecture="32-bit"
                        isDebug="1" optimisation="1" targetName="Shifter"/>

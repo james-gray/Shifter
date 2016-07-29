@@ -95,15 +95,15 @@ void ShifterAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBloc
     blockFftBuffer_.reset(new AudioBuffer<float>(totalNumInputChannels, samplesPerBlock * 2));
 
     // Allocate storage for output buffers.
-    resampledOverlapBuffer_.reset(new AudioBuffer<float>(totalNumInputChannels, samplesPerBlock * 2));
-    resampledBlockBuffer_.reset(new AudioBuffer<float>(totalNumInputChannels, samplesPerBlock * 2));
+    resampledOverlapBuffer_.reset(new AudioBuffer<float>(totalNumInputChannels, samplesPerBlock * 4));
+    resampledBlockBuffer_.reset(new AudioBuffer<float>(totalNumInputChannels, samplesPerBlock * 4));
 
     outputBuffer_.reset(new AudioBuffer<float>(totalNumInputChannels, samplesPerBlock * 4));
 
     // Initial pitch adjustment ratio
     analysisHopSize_ = samplesPerBlock / 2;
 
-    pitchShift_ = pow(2.0, -12.0/12.0);
+    pitchShift_ = pow(2.0, 1.0/12.0);
     actualRatio_ = round(pitchShift_ * analysisHopSize_) / analysisHopSize_;
     pitchShiftInv_ = 1/pitchShift_;
 
@@ -112,6 +112,8 @@ void ShifterAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBloc
     overlapWindowBuffer_->clear();
     overlapFftBuffer_->clear();
     blockFftBuffer_->clear();
+    resampledBlockBuffer_->clear();
+    resampledOverlapBuffer_->clear();
 
     // Set up the Hann window buffer
     analysisWindowLength_ = blockSize_ = samplesPerBlock;
@@ -133,7 +135,7 @@ void ShifterAudioProcessor::releaseResources()
 {
     // When playback stops, you can use this as an opportunity to free up any
     // spare memory, etc.
-    preparedToPlay_ = true;
+    preparedToPlay_ = false;
 }
 
 #ifndef JucePlugin_PreferredChannelConfigurations
@@ -240,7 +242,7 @@ void ShifterAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
         // Resample and write the phase-adjusted overlap and block data to their buffers
         resampleAndWindowBuffer(overlapFft, resampledOverlapBuffer, resampledBufferLength_);
         resampleAndWindowBuffer(blockFft, resampledBlockBuffer, resampledBufferLength_);
-
+        
         // Write the resampled overlap and block data to the output buffer
         for (int i = 0, j = analysisHopSize_; i < resampledBufferLength_; ++i, ++j) {
             outputBuffer[i] += resampledOverlapBuffer[i];
@@ -248,9 +250,9 @@ void ShifterAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
         }
 
         // Clear the resampled buffers for this channel
-        resampledOverlapBuffer_->clear(channel, 0, resampledBufferLength_);
-        resampledBlockBuffer_->clear(channel, 0, resampledBufferLength_);
-
+        resampledOverlapBuffer_->clear(channel, 0, resampledOverlapBuffer_->getNumSamples());
+        resampledBlockBuffer_->clear(channel, 0, resampledBlockBuffer_->getNumSamples());
+        
         // Output the samples for this block to the channel stream.
         for (int i = 0; i < numSamples; ++i) {
             channelData[i] = outputBuffer[i];

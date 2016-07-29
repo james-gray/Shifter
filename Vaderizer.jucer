@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<JUCERPROJECT id="TV0omU" name="Shifter" projectType="audioplug" version="1.0.0"
+<JUCERPROJECT id="TV0omU" name="Vaderizer" projectType="audioplug" version="1.0.0"
               bundleIdentifier="com.jjh.Vaderizer" includeBinaryInAppConfig="1"
               buildVST="1" buildVST3="0" buildAU="1" buildAUv3="0" buildRTAS="0"
               buildAAX="0" pluginName="Vaderizer" pluginDesc="Vaderizer" pluginManufacturer="jjh"
@@ -9,7 +9,7 @@
               pluginIsMidiEffectPlugin="0" pluginEditorRequiresKeys="0" pluginAUExportPrefix="VaderizerAU"
               pluginRTASCategory="" aaxIdentifier="com.jjh.Vaderizer" pluginAAXCategory="AAX_ePlugInCategory_Dynamics"
               jucerVersion="4.2.3" companyName="JJH">
-  <MAINGROUP id="bcW8Wc" name="Shifter">
+  <MAINGROUP id="bcW8Wc" name="Vaderizer">
     <GROUP id="{9878FC32-2357-2B96-FEEA-0C535E696F5B}" name="Resources">
       <FILE id="ihWmYR" name="dv_helmet.png" compile="0" resource="1" file="Resources/dv_helmet.png"/>
       <FILE id="LI0c9Y" name="Starjedi.ttf" compile="0" resource="1" file="Resources/Starjedi.ttf"/>

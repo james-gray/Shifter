@@ -61,6 +61,7 @@ public:
     
     int fftGetSize() {return fftSize_;}
     void adjustPhaseForPitchShift(float*, int);
+    void resampleBuffer(float*, float*, float);
     float princArg(float);
 
 private:
@@ -86,6 +87,7 @@ private:
     int windowLength_;
     int analysisHopSize_;
     float shiftRatio_;
+    int outputWindowLength_;
 
     FFT* fft_;
     FFT* ifft_;
@@ -99,6 +101,8 @@ private:
     
     // Output buffer
     AudioBuffer<float>* outputBuffer_;
+    AudioBuffer<float>* synthesisWindowFunction_;
+    AudioBuffer<float>* resampledBuffer_;
 };
 
 

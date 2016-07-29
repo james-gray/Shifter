@@ -338,7 +338,7 @@ void ShifterAudioProcessor::adjustPhaseForPitchShift(float* fft, int channel) {
 void ShifterAudioProcessor::resampleAndWindowBuffer(float* inBuffer, float* outBuffer, float outputLength) {
     for (int i = 0; i < outputLength; i++) {
         // Get the fractional index of the sample in question
-        float sample = i * blockSize_ / outputLength;
+        float sample = (i * blockSize_) / outputLength;
 
         // Get the integer indices of the samples around our fractional sample
         int prevSample = floor(sample);

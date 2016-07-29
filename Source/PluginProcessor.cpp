@@ -15,8 +15,7 @@
 ShifterAudioProcessor::ShifterAudioProcessor() :
     overlapWindowBuffer_(nullptr), overlapFftBuffer_(nullptr),
     blockFftBuffer_(nullptr), analysisWindowFunction_(nullptr),
-    synthesisWindowFunction_(nullptr), fft_(nullptr),
-    ifft_(nullptr), outputBuffer_(nullptr),
+    fft_(nullptr), ifft_(nullptr), outputBuffer_(nullptr),
     resampledOverlapBuffer_(nullptr), resampledBlockBuffer_(nullptr),
     preparedToPlay_(false)
 {
@@ -90,7 +89,6 @@ void ShifterAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBloc
     fftSize_ = std::log2(samplesPerBlock);
 
     analysisWindowFunction_.reset(new AudioBuffer<float>(1, samplesPerBlock));
-    synthesisWindowFunction_.reset(new AudioBuffer<float>(1, samplesPerBlock * 2));
 
     // Set up the FFT objects
     fft_.reset(new FFT(fftSize_, /* isInverse */ false));
@@ -109,6 +107,7 @@ void ShifterAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBloc
 
     // Initial pitch adjustment ratio
     analysisHopSize_ = samplesPerBlock / 2;
+
     pitchShift_ = pow(2.0, -12.0/12.0);
     actualRatio_ = round(pitchShift_ * analysisHopSize_) / analysisHopSize_;
     pitchShiftInv_ = 1/pitchShift_;
@@ -121,12 +120,9 @@ void ShifterAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBloc
 
     // Set up the Hann window buffer
     analysisWindowLength_ = blockSize_ = samplesPerBlock;
-    synthesisWindowLength_ = floor(pitchShiftInv_ * blockSize_);
+    resampledBufferLength_ = floor(pitchShiftInv_ * blockSize_);
     for (int i = 0; i < analysisWindowLength_; ++i) {
         analysisWindowFunction_->setSample(0, i, 0.5 * (1.0 - cos(2.0 * M_PI * (float) i / analysisWindowLength_)));
-    }
-    for (int i = 0; i < synthesisWindowLength_; ++i) {
-        synthesisWindowFunction_->setSample(0, i, 0.5 * (1.0 - cos(2.0 * M_PI * (float) i / synthesisWindowLength_)));
     }
 
     // 2D Array for storing phase from previous block for each channel, initialize to 0
@@ -209,8 +205,7 @@ void ShifterAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
         float* resampledBlockBuffer = resampledBlockBuffer_->getWritePointer(channel);
 
         const float* analysisWindowFunction = analysisWindowFunction_->getReadPointer(0);
-        const float* synthesisWindowFunction = synthesisWindowFunction_->getReadPointer(0);
-        
+
         // Store the first half of this block in the second half of the overlap
         // buffer. This will ensure the overlap buffer is full.
         for (int i = 0; i < analysisHopSize_; ++i) {
@@ -248,18 +243,18 @@ void ShifterAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
         ifft_->performRealOnlyInverseTransform(blockFft);
 
         // Resample and write the phase-adjusted overlap and block data to their buffers
-        resampleBuffer(overlapFft, resampledOverlapBuffer, synthesisWindowLength_);
-        resampleBuffer(blockFft, resampledBlockBuffer, synthesisWindowLength_);
+        resampleAndWindowBuffer(overlapFft, resampledOverlapBuffer, resampledBufferLength_);
+        resampleAndWindowBuffer(blockFft, resampledBlockBuffer, resampledBufferLength_);
 
         // Write the resampled overlap and block data to the output buffer
-        for (int i = 0, j = analysisHopSize_; i < synthesisWindowLength_; ++i, ++j) {
-            outputBuffer[i] += resampledOverlapBuffer[i] * synthesisWindowFunction[i];
-            outputBuffer[j] += resampledBlockBuffer[i] * synthesisWindowFunction[i];
+        for (int i = 0, j = analysisHopSize_; i < resampledBufferLength_; ++i, ++j) {
+            outputBuffer[i] += resampledOverlapBuffer[i];
+            outputBuffer[j] += resampledBlockBuffer[i];
         }
 
         // Clear the resampled buffers for this channel
-        resampledOverlapBuffer_->clear(channel, 0, synthesisWindowLength_);
-        resampledBlockBuffer_->clear(channel, 0, synthesisWindowLength_);
+        resampledOverlapBuffer_->clear(channel, 0, resampledBufferLength_);
+        resampledBlockBuffer_->clear(channel, 0, resampledBufferLength_);
 
         // Output the samples for this block to the channel stream.
         for (int i = 0; i < numSamples; ++i) {
@@ -269,7 +264,7 @@ void ShifterAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
         // Save any output buffer samples that we have not yet output into the first
         // part of the output buffer, so they will be output on the next block after
         // additional output is processed and added to them.
-        int samplesToOutput = synthesisWindowLength_ + analysisHopSize_ - numSamples;
+        int samplesToOutput = resampledBufferLength_ + analysisHopSize_ - numSamples;
         for (int i = 0; i < numSamples * 4; i++) {
             if (i < samplesToOutput) {
                 outputBuffer[i] = outputBuffer[i + numSamples];
@@ -312,7 +307,7 @@ void ShifterAudioProcessor::adjustPhaseForPitchShift(float* fft, int channel) {
     }
 }
 
-void ShifterAudioProcessor::resampleBuffer(float* inBuffer, float* outBuffer, float outputLength) {
+void ShifterAudioProcessor::resampleAndWindowBuffer(float* inBuffer, float* outBuffer, float outputLength) {
     for (int i = 0; i < outputLength; i++) {
         // Get the fractional index of the sample in question
         float sample = i * blockSize_ / outputLength;
@@ -326,6 +321,9 @@ void ShifterAudioProcessor::resampleBuffer(float* inBuffer, float* outBuffer, fl
 
         // Perform linear interpolation on the two integer indices
         outBuffer[i] = (inBuffer[prevSample] * (1.0 - frac)) + (inBuffer[nextSample] * frac);
+
+        // Window the buffer
+        outBuffer[i] *= 0.5 * (1.0 - cos(2.0 * M_PI * (float) i / outputLength));
     }
 }
 

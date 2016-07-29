@@ -60,7 +60,7 @@ public:
     
     int fftGetSize() {return fftSize_;}
     void adjustPhaseForPitchShift(float*, int);
-    void resampleBuffer(float*, float*, float);
+    void resampleAndWindowBuffer(float*, float*, float);
     float princArg(float);
 
 private:
@@ -82,10 +82,9 @@ private:
     // Buffer to hold the Hamming window. This will be initialized in
     // prepareToPlay.
     std::shared_ptr<AudioBuffer<float>> analysisWindowFunction_;
-    std::shared_ptr<AudioBuffer<float>> synthesisWindowFunction_;
 
     int analysisWindowLength_;
-    int synthesisWindowLength_;
+    int resampledBufferLength_;
     int blockSize_;
     int analysisHopSize_;
     float shiftRatio_;

@@ -193,7 +193,6 @@ void ShifterAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
     }
 
     for (int channel = 0; channel < totalNumInputChannels; ++channel) {
-
         // ***************
         // * INPUT STAGE *
         // ***************
@@ -259,16 +258,17 @@ void ShifterAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
             outputBuffer[j] += resampledBlockBuffer[i] * synthesisWindowFunction[i];
         }
 
+        // Clear the resampled buffers for this channel
         resampledOverlapBuffer_->clear(channel, 0, synthesisWindowLength_);
         resampledBlockBuffer_->clear(channel, 0, synthesisWindowLength_);
 
-        // Output to stream
+        // Output the samples for this block to the channel stream.
         for (int i = 0; i < numSamples; ++i) {
-            channelData[i] = outputBuffer[i]*5.0;
+            channelData[i] = outputBuffer[i];
         }
         
         // Save any output buffer samples that we have not yet output into the first
-        // half of the output buffer, so they will be output on the next block after
+        // part of the output buffer, so they will be output on the next block after
         // additional output is processed and added to them.
         int samplesToOutput = synthesisWindowLength_ + analysisHopSize_ - numSamples;
         for (int i = 0; i < numSamples * 4; i++) {
@@ -288,8 +288,11 @@ void ShifterAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
 
 void ShifterAudioProcessor::adjustPhaseForPitchShift(float* fft, int channel) {
     for (int i = 0, fftIndex = 0; i < blockSize_; ++i, fftIndex = i * 2) {
+        // Extract real and imaginary components from the fft
         float re = fft[fftIndex];
         float im = fft[fftIndex + 1];
+
+        // Compute amplitude and phase
         float amplitude = sqrt((re * re) + (im * im));
         float phase = atan2(im, re);
 
@@ -312,10 +315,17 @@ void ShifterAudioProcessor::adjustPhaseForPitchShift(float* fft, int channel) {
 
 void ShifterAudioProcessor::resampleBuffer(float* inBuffer, float* outBuffer, float outputLength) {
     for (int i = 0; i < outputLength; i++) {
+        // Get the fractional index of the sample in question
         float sample = i * blockSize_ / outputLength;
+
+        // Get the integer indices of the samples around our fractional sample
         int prevSample = floor(sample);
         int nextSample = prevSample + 1;
+
+        // Calculate the fractional component
         float frac = sample - (float)prevSample;
+
+        // Perform linear interpolation on the two integer indices
         outBuffer[i] = (inBuffer[prevSample] * (1.0 - frac));
         if (nextSample < blockSize_) {
             outBuffer[i] += inBuffer[nextSample] * frac;

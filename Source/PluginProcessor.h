@@ -71,18 +71,18 @@ private:
     // store them before processing.
     
     
-    AudioBuffer<float>* overlapWindowBuffer_;
+    std::shared_ptr<AudioBuffer<float>> overlapWindowBuffer_;
 
     // Array holding buffers for taking the FFT of overlap windows.
-    AudioBuffer<float>* overlapFftBuffer_;
+    std::shared_ptr<AudioBuffer<float>> overlapFftBuffer_;
 
     // Array holding buffers for taking the FFT of the current block.
-    AudioBuffer<float>* blockFftBuffer_;
+    std::shared_ptr<AudioBuffer<float>> blockFftBuffer_;
 
     // Buffer to hold the Hamming window. This will be initialized in
     // prepareToPlay.
-    AudioBuffer<float>* analysisWindowFunction_;
-    AudioBuffer<float>* synthesisWindowFunction_;
+    std::shared_ptr<AudioBuffer<float>> analysisWindowFunction_;
+    std::shared_ptr<AudioBuffer<float>> synthesisWindowFunction_;
 
     int analysisWindowLength_;
     int synthesisWindowLength_;
@@ -92,10 +92,12 @@ private:
     float pitchShift_;
     float pitchShiftInv_;
     float actualRatio_;
+    
+    bool preparedToPlay_;
 
 
-    FFT* fft_;
-    FFT* ifft_;
+    std::shared_ptr<FFT> fft_;
+    std::shared_ptr<FFT> ifft_;
 
     int fftSize_;
     
@@ -105,9 +107,9 @@ private:
 
     
     // Output buffers
-    AudioBuffer<float>* outputBuffer_;
-    AudioBuffer<float>* resampledOverlapBuffer_;
-    AudioBuffer<float>* resampledBlockBuffer_;
+    std::shared_ptr<AudioBuffer<float>> outputBuffer_;
+    std::shared_ptr<AudioBuffer<float>> resampledOverlapBuffer_;
+    std::shared_ptr<AudioBuffer<float>> resampledBlockBuffer_;
 };
 
 

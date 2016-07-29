@@ -17,23 +17,13 @@ ShifterAudioProcessor::ShifterAudioProcessor() :
     blockFftBuffer_(nullptr), analysisWindowFunction_(nullptr),
     synthesisWindowFunction_(nullptr), fft_(nullptr),
     ifft_(nullptr), outputBuffer_(nullptr),
-    resampledOverlapBuffer_(nullptr), resampledBlockBuffer_(nullptr)
+    resampledOverlapBuffer_(nullptr), resampledBlockBuffer_(nullptr),
+    preparedToPlay_(false)
 {
 }
 
 ShifterAudioProcessor::~ShifterAudioProcessor()
 {
-    delete outputBuffer_;
-    delete ifft_;
-    delete fft_;
-    delete analysisWindowFunction_;
-    delete synthesisWindowFunction_;
-    delete blockFftBuffer_;
-    delete overlapFftBuffer_;
-    delete overlapWindowBuffer_;
-    delete resampledOverlapBuffer_;
-    delete resampledBlockBuffer_;
-
 }
 
 //==============================================================================
@@ -92,28 +82,30 @@ void ShifterAudioProcessor::changeProgramName (int index, const String& newName)
 //==============================================================================
 void ShifterAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    const int totalNumInputChannels = getTotalNumInputChannels();
+    preparedToPlay_ = false;
+    //const int totalNumInputChannels = getTotalNumInputChannels();
+    const int totalNumInputChannels = 2;
 
     // Set the FFT size
     fftSize_ = std::log2(samplesPerBlock);
 
-    analysisWindowFunction_ = new AudioBuffer<float>(1, samplesPerBlock);
-    synthesisWindowFunction_ = new AudioBuffer<float>(1, samplesPerBlock * 2);
+    analysisWindowFunction_.reset(new AudioBuffer<float>(1, samplesPerBlock));
+    synthesisWindowFunction_.reset(new AudioBuffer<float>(1, samplesPerBlock * 2));
 
     // Set up the FFT objects
-    fft_ = new FFT(fftSize_, /* isInverse */ false);
-    ifft_ = new FFT(fftSize_, /* isInverse */ true);
+    fft_.reset(new FFT(fftSize_, /* isInverse */ false));
+    ifft_.reset(new FFT(fftSize_, /* isInverse */ true));
 
     // Allocate storage for FFT, overlap and window buffers.
-    overlapWindowBuffer_ = new AudioBuffer<float>(totalNumInputChannels, samplesPerBlock);
-    overlapFftBuffer_ = new AudioBuffer<float>(totalNumInputChannels, samplesPerBlock * 2);
-    blockFftBuffer_ = new AudioBuffer<float>(totalNumInputChannels, samplesPerBlock * 2);
+    overlapWindowBuffer_.reset(new AudioBuffer<float>(totalNumInputChannels, samplesPerBlock));
+    overlapFftBuffer_.reset(new AudioBuffer<float>(totalNumInputChannels, samplesPerBlock * 2));
+    blockFftBuffer_.reset(new AudioBuffer<float>(totalNumInputChannels, samplesPerBlock * 2));
 
     // Allocate storage for output buffers.
-    resampledOverlapBuffer_ = new AudioBuffer<float>(totalNumInputChannels, samplesPerBlock * 2);
-    resampledBlockBuffer_ = new AudioBuffer<float>(totalNumInputChannels, samplesPerBlock * 2);
+    resampledOverlapBuffer_.reset(new AudioBuffer<float>(totalNumInputChannels, samplesPerBlock * 2));
+    resampledBlockBuffer_.reset(new AudioBuffer<float>(totalNumInputChannels, samplesPerBlock * 2));
 
-    outputBuffer_ = new AudioBuffer<float>(totalNumInputChannels, samplesPerBlock * 4);
+    outputBuffer_.reset(new AudioBuffer<float>(totalNumInputChannels, samplesPerBlock * 4));
 
     // Initial pitch adjustment ratio
     analysisHopSize_ = samplesPerBlock / 2;
@@ -142,12 +134,15 @@ void ShifterAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBloc
         prevAbsolutePhase_.emplace_back(blockSize_, 0.0);
         prevAdjustedPhase_.emplace_back(blockSize_, 0.0);
     }
+    
+    preparedToPlay_ = true;
 }
 
 void ShifterAudioProcessor::releaseResources()
 {
     // When playback stops, you can use this as an opportunity to free up any
     // spare memory, etc.
+    preparedToPlay_ = true;
 }
 
 #ifndef JucePlugin_PreferredChannelConfigurations
@@ -180,6 +175,11 @@ void ShifterAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
     const int totalNumInputChannels  = getTotalNumInputChannels();
     const int totalNumOutputChannels = getTotalNumOutputChannels();
     const int numSamples = buffer.getNumSamples();
+    
+    if (!preparedToPlay_) {
+        buffer.clear();
+        return;
+    }
 
     // In case we have more outputs than inputs, this code clears any output
     // channels that didn't contain input data, (because these aren't
@@ -190,7 +190,7 @@ void ShifterAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
     for (int i = totalNumInputChannels; i < totalNumOutputChannels; ++i) {
         buffer.clear (i, 0, numSamples);
     }
-
+    
     for (int channel = 0; channel < totalNumInputChannels; ++channel) {
         // ***************
         // * INPUT STAGE *
@@ -210,7 +210,7 @@ void ShifterAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
 
         const float* analysisWindowFunction = analysisWindowFunction_->getReadPointer(0);
         const float* synthesisWindowFunction = synthesisWindowFunction_->getReadPointer(0);
-
+        
         // Store the first half of this block in the second half of the overlap
         // buffer. This will ensure the overlap buffer is full.
         for (int i = 0; i < analysisHopSize_; ++i) {

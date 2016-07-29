@@ -350,8 +350,12 @@ void ShifterAudioProcessor::resampleAndWindowBuffer(float* inBuffer, float* outB
         // Perform linear interpolation on the two integer indices
         outBuffer[i] = (inBuffer[prevSample] * (1.0 - frac)) + (inBuffer[nextSample] * frac);
 
-        // Window the buffer
-        outBuffer[i] *= 0.5 * (1.0 - cos(2.0 * M_PI * (float) i / outputLength));
+        // Window the buffer if any transposition is being applied.
+        // If we aren't transposing at all it seems to be much higher quality
+        // without windowing.
+        if (!((int) coarsePitch_ == 0 && (int) (100.0 * finePitch_) == 0)) {
+            outBuffer[i] *= 0.5 * (1.0 - cos(2.0 * M_PI * (float) i / outputLength));
+        }
     }
 }
 

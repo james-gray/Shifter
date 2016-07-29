@@ -61,6 +61,7 @@ public:
     
     int fftGetSize() {return fftSize_;}
     void adjustPhaseForPitchShift(float*, int);
+    void resampleBuffer(float*, float*, float);
     float princArg(float);
 
 private:
@@ -81,11 +82,18 @@ private:
 
     // Buffer to hold the Hamming window. This will be initialized in
     // prepareToPlay.
-    AudioBuffer<float>* windowFunction_;
+    AudioBuffer<float>* analysisWindowFunction_;
+    AudioBuffer<float>* synthesisWindowFunction_;
 
-    int windowLength_;
+    int analysisWindowLength_;
+    int synthesisWindowLength_;
+    int blockSize_;
     int analysisHopSize_;
     float shiftRatio_;
+    float pitchShift_;
+    float pitchShiftInv_;
+    float actualRatio_;
+
 
     FFT* fft_;
     FFT* ifft_;
@@ -97,8 +105,10 @@ private:
     std::vector<std::vector<float>> prevAdjustedPhase_;
 
     
-    // Output buffer
+    // Output buffers
     AudioBuffer<float>* outputBuffer_;
+    AudioBuffer<float>* resampledOverlapBuffer_;
+    AudioBuffer<float>* resampledBlockBuffer_;
 };
 
 

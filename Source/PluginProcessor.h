@@ -105,9 +105,10 @@ private:
     std::vector<std::vector<float>> prevAdjustedPhase_;
 
     
-    // Output buffer
+    // Output buffers
     AudioBuffer<float>* outputBuffer_;
-    AudioBuffer<float>* resampledBuffer_;
+    AudioBuffer<float>* resampledOverlapBuffer_;
+    AudioBuffer<float>* resampledBlockBuffer_;
 };
 
 

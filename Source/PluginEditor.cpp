@@ -23,34 +23,34 @@ ShifterAudioProcessorEditor::ShifterAudioProcessorEditor (ShifterAudioProcessor&
     starWarsFont = Font(starFont);
     
     // Set the coarse pitch rotary
-    coarsePitch.setSliderStyle(Slider::RotaryVerticalDrag);
-    coarsePitch.setRange(-12.0, 12.0, 1.0);
-    coarsePitch.setTextBoxStyle(Slider::NoTextBox, true, 90, 0);
-    coarsePitch.setPopupDisplayEnabled(true, this);
-    coarsePitch.setTextValueSuffix(" Semitones");
-    coarsePitch.setColour(0x1001311, Colours::black);
-    coarsePitch.setValue(0.0);
+    coarsePitchSlider.setSliderStyle(Slider::RotaryVerticalDrag);
+    coarsePitchSlider.setRange(-12.0, 12.0, 1.0);
+    coarsePitchSlider.setTextBoxStyle(Slider::NoTextBox, true, 90, 0);
+    coarsePitchSlider.setPopupDisplayEnabled(true, this);
+    coarsePitchSlider.setTextValueSuffix(" Semitones");
+    coarsePitchSlider.setColour(0x1001311, Colours::black);
+    coarsePitchSlider.setValue(0.0);
     
     // Label for coarse pitch
     coarsePitchLabel.setFont(starWarsFont);
     coarsePitchLabel.setJustificationType(Justification(12));
     coarsePitchLabel.setText(String("coarse"), dontSendNotification);
-    coarsePitchLabel.attachToComponent(&coarsePitch, false);
+    coarsePitchLabel.attachToComponent(&coarsePitchSlider, false);
     
     // Set the fine pitch rotary
-    finePitch.setSliderStyle(Slider::RotaryVerticalDrag);
-    finePitch.setRange(-50.0, 50.0, 1.0);
-    finePitch.setTextBoxStyle(Slider::NoTextBox, true, 90, 0);
-    finePitch.setPopupDisplayEnabled(true, this);
-    finePitch.setTextValueSuffix(" Cents");
-    finePitch.setColour(0x1001311, Colours::black);
-    finePitch.setValue(0.0);
+    finePitchSlider.setSliderStyle(Slider::RotaryVerticalDrag);
+    finePitchSlider.setRange(-50.0, 50.0, 1.0);
+    finePitchSlider.setTextBoxStyle(Slider::NoTextBox, true, 90, 0);
+    finePitchSlider.setPopupDisplayEnabled(true, this);
+    finePitchSlider.setTextValueSuffix(" Cents");
+    finePitchSlider.setColour(0x1001311, Colours::black);
+    finePitchSlider.setValue(0.0);
     
     // Label for fine pitch
     finePitchLabel.setFont(starWarsFont);
     finePitchLabel.setJustificationType(Justification(12));
     finePitchLabel.setText(String("fine"), dontSendNotification);
-    finePitchLabel.attachToComponent(&finePitch, false);
+    finePitchLabel.attachToComponent(&finePitchSlider, false);
     
     // Setup the Darth Vader image
     Image vaderImage = ImageFileFormat::loadFrom(
@@ -61,9 +61,13 @@ ShifterAudioProcessorEditor::ShifterAudioProcessorEditor (ShifterAudioProcessor&
     
     // Add components to GUI
     addAndMakeVisible(&darthVader);
-    addAndMakeVisible(&coarsePitch);
+	coarsePitchSlider.addListener(this);
+
+    addAndMakeVisible(&coarsePitchSlider);
     addAndMakeVisible(&coarsePitchLabel);
-    addAndMakeVisible(&finePitch);
+
+	finePitchSlider.addListener(this);
+    addAndMakeVisible(&finePitchSlider);
     addAndMakeVisible(&finePitchLabel);
 }
 
@@ -88,6 +92,16 @@ void ShifterAudioProcessorEditor::resized()
 {
     // Position components on screen
     darthVader.setBounds(0, 10, 300, 150);
-    coarsePitch.setBounds(50, 80, 75, getHeight() - 80);
-    finePitch.setBounds(180, 80, 75, getHeight() - 80);
+    coarsePitchSlider.setBounds(50, 80, 75, getHeight() - 80);
+    finePitchSlider.setBounds(180, 80, 75, getHeight() - 80);
+}
+
+void ShifterAudioProcessorEditor::sliderValueChanged(Slider* slider)
+{
+	if (slider == &coarsePitchSlider) {
+		processor.coarsePitch_ = coarsePitchSlider.getValue();
+	}
+	else if (slider == &finePitchSlider) {
+		processor.finePitch_ = finePitchSlider.getValue();
+	}
 }

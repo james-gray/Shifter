@@ -12,6 +12,7 @@
   <MAINGROUP id="bcW8Wc" name="Shifter">
     <GROUP id="{9878FC32-2357-2B96-FEEA-0C535E696F5B}" name="Resources">
       <FILE id="ihWmYR" name="dv_helmet.png" compile="0" resource="1" file="Resources/dv_helmet.png"/>
+      <FILE id="LI0c9Y" name="Starjedi.ttf" compile="0" resource="1" file="Resources/Starjedi.ttf"/>
     </GROUP>
     <GROUP id="{E4DF3F15-A2C4-4451-D2D1-21C533BF85AD}" name="Source">
       <FILE id="mpBiKE" name="PluginProcessor.cpp" compile="1" resource="0"
@@ -30,20 +31,20 @@
         <CONFIGURATION name="Release" isDebug="0" optimisation="3" targetName="Shifter"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
-        <MODULEPATH id="juce_core" path="../../../Libraries/JUCE/modules"/>
-        <MODULEPATH id="juce_events" path="../../../Libraries/JUCE/modules"/>
-        <MODULEPATH id="juce_graphics" path="../../../Libraries/JUCE/modules"/>
-        <MODULEPATH id="juce_data_structures" path="../../../Libraries/JUCE/modules"/>
-        <MODULEPATH id="juce_gui_basics" path="../../../Libraries/JUCE/modules"/>
-        <MODULEPATH id="juce_gui_extra" path="../../../Libraries/JUCE/modules"/>
-        <MODULEPATH id="juce_cryptography" path="../../../Libraries/JUCE/modules"/>
-        <MODULEPATH id="juce_video" path="../../../Libraries/JUCE/modules"/>
-        <MODULEPATH id="juce_opengl" path="../../../Libraries/JUCE/modules"/>
-        <MODULEPATH id="juce_audio_basics" path="../../../Libraries/JUCE/modules"/>
-        <MODULEPATH id="juce_audio_devices" path="../../../Libraries/JUCE/modules"/>
-        <MODULEPATH id="juce_audio_formats" path="../../../Libraries/JUCE/modules"/>
-        <MODULEPATH id="juce_audio_processors" path="../../../Libraries/JUCE/modules"/>
-        <MODULEPATH id="juce_audio_plugin_client" path="../../../Libraries/JUCE/modules"/>
+        <MODULEPATH id="juce_core" path="../../Libraries/JUCE/modules"/>
+        <MODULEPATH id="juce_events" path="../../Libraries/JUCE/modules"/>
+        <MODULEPATH id="juce_graphics" path="../../Libraries/JUCE/modules"/>
+        <MODULEPATH id="juce_data_structures" path="../../Libraries/JUCE/modules"/>
+        <MODULEPATH id="juce_gui_basics" path="../../Libraries/JUCE/modules"/>
+        <MODULEPATH id="juce_gui_extra" path="../../Libraries/JUCE/modules"/>
+        <MODULEPATH id="juce_cryptography" path="../../Libraries/JUCE/modules"/>
+        <MODULEPATH id="juce_video" path="../../Libraries/JUCE/modules"/>
+        <MODULEPATH id="juce_opengl" path="../../Libraries/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_basics" path="../../Libraries/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_devices" path="../../Libraries/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_formats" path="../../Libraries/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_processors" path="../../Libraries/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_plugin_client" path="../../Libraries/JUCE/modules"/>
       </MODULEPATHS>
     </XCODE_MAC>
     <VS2015 targetFolder="Builds/VisualStudio2015" vstFolder="">

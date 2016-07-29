@@ -73,6 +73,38 @@ void ShifterAudioProcessor::changeProgramName (int index, const String& newName)
 {
 }
 
+float ShifterAudioProcessor::getCoarsePitch() {
+    return coarsePitch_;
+}
+
+void ShifterAudioProcessor::setCoarsePitch(float coarsePitch) {
+    coarsePitch_ = coarsePitch;
+}
+
+float ShifterAudioProcessor::getFinePitch() {
+    return finePitch_;
+}
+
+void ShifterAudioProcessor::setFinePitch(float finePitch) {
+    finePitch_ = finePitch;
+}
+
+void ShifterAudioProcessor::updatePitchShift() {
+    pitchShift_ = pow(2.0, (coarsePitch_ + finePitch_)/12.0);
+    actualRatio_ = round(pitchShift_ * analysisHopSize_) / analysisHopSize_;
+    pitchShiftInv_ = 1/pitchShift_;
+    resampledBufferLength_ = floor(pitchShiftInv_ * blockSize_);
+}
+
+void ShifterAudioProcessor::resetPreviousPhaseData() {
+    for (int i = 0; i<blockSize_; i++) {
+        for (int channel=0; channel<getTotalNumInputChannels(); channel++) {
+            prevAdjustedPhase_[channel][i] = 0.0;
+            prevAbsolutePhase_[channel][i] = 0.0;
+        }
+    }
+}
+
 //==============================================================================
 void ShifterAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
@@ -103,10 +135,6 @@ void ShifterAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBloc
     // Initial pitch adjustment ratio
     analysisHopSize_ = samplesPerBlock / 2;
 
-    pitchShift_ = pow(2.0, -12.0/12.0);
-    actualRatio_ = round(pitchShift_ * analysisHopSize_) / analysisHopSize_;
-    pitchShiftInv_ = 1/pitchShift_;
-
     //zero out
     outputBuffer_->clear();
     overlapWindowBuffer_->clear();
@@ -115,7 +143,7 @@ void ShifterAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBloc
 
     // Set up the Hann window buffer
     analysisWindowLength_ = blockSize_ = samplesPerBlock;
-    resampledBufferLength_ = floor(pitchShiftInv_ * blockSize_);
+
     for (int i = 0; i < analysisWindowLength_; ++i) {
         analysisWindowFunction_->setSample(0, i, 0.5 * (1.0 - cos(2.0 * M_PI * (float) i / analysisWindowLength_)));
     }
@@ -125,7 +153,12 @@ void ShifterAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBloc
         prevAbsolutePhase_.emplace_back(blockSize_, 0.0);
         prevAdjustedPhase_.emplace_back(blockSize_, 0.0);
     }
-    
+
+    // Update the pitch shift values
+    coarsePitch_ = 0.0;
+    finePitch_ = 0.0;
+    updatePitchShift();
+
     preparedToPlay_ = true;
 }
 

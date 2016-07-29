@@ -63,6 +63,13 @@ public:
     void resampleAndWindowBuffer(float*, float*, float);
     float princArg(float);
 
+    float getCoarsePitch();
+    void setCoarsePitch(float);
+    float getFinePitch();
+    void setFinePitch(float);
+    void updatePitchShift();
+    void resetPreviousPhaseData();
+
 private:
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ShifterAudioProcessor)
@@ -88,6 +95,9 @@ private:
     int blockSize_;
     int analysisHopSize_;
     float shiftRatio_;
+
+    float coarsePitch_;
+    float finePitch_;
     float pitchShift_;
     float pitchShiftInv_;
     float actualRatio_;

@@ -24,7 +24,7 @@ ShifterAudioProcessorEditor::ShifterAudioProcessorEditor (ShifterAudioProcessor&
     
     // Set the coarse pitch rotary
     coarsePitchSlider.setSliderStyle(Slider::RotaryVerticalDrag);
-    coarsePitchSlider.setRange(-12.0, 12.0, 1.0);
+    coarsePitchSlider.setRange(-12.0, 0.0, 1.0);
     coarsePitchSlider.setTextBoxStyle(Slider::NoTextBox, true, 90, 0);
     coarsePitchSlider.setPopupDisplayEnabled(true, this);
     coarsePitchSlider.setTextValueSuffix(" Semitones");
@@ -99,9 +99,12 @@ void ShifterAudioProcessorEditor::resized()
 void ShifterAudioProcessorEditor::sliderValueChanged(Slider* slider)
 {
 	if (slider == &coarsePitchSlider) {
-		processor.coarsePitch_ = coarsePitchSlider.getValue();
+		processor.setCoarsePitch((float) coarsePitchSlider.getValue());
 	}
 	else if (slider == &finePitchSlider) {
-		processor.finePitch_ = finePitchSlider.getValue();
+		processor.setFinePitch((float) finePitchSlider.getValue() / 100.0);
+
 	}
+  processor.updatePitchShift();
+  processor.resetPreviousPhaseData();
 }

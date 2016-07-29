@@ -38,11 +38,10 @@ ShifterAudioProcessorEditor::ShifterAudioProcessorEditor (ShifterAudioProcessor&
     finePitch.setColour(0x1001311, Colours::black);
     finePitch.setValue(0.0);
     
-    const File logoFile(String("./Images/shifter_logo2.png"));
-    Image ourLogo = ImageFileFormat::loadFrom(logoFile);
-    logo.setImage(ourLogo);
-    
-    
+    Image darthVader = ImageFileFormat::loadFrom(
+        BinaryData::dv_helmet_png, static_cast<size_t>(BinaryData::dv_helmet_pngSize)
+    );
+    logo.setImage(darthVader);
     
     // Add the two rotaries to the GUI
     addAndMakeVisible(&coarsePitch);

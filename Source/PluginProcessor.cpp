@@ -11,7 +11,6 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
-
 //==============================================================================
 ShifterAudioProcessor::ShifterAudioProcessor() :
     overlapWindowBuffer_(nullptr), overlapFftBuffer_(nullptr),

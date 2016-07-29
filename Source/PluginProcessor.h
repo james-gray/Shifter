@@ -12,9 +12,8 @@
 #define PLUGINPROCESSOR_H_INCLUDED
 
 #include "../JuceLibraryCode/JuceHeader.h"
+#include <iostream>
 #include <vector>
-#include <algorithm>
-
 
 //==============================================================================
 /**

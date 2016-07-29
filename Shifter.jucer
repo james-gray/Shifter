@@ -19,6 +19,9 @@
             file="Source/PluginEditor.cpp"/>
       <FILE id="bKlq9C" name="PluginEditor.h" compile="0" resource="0" file="Source/PluginEditor.h"/>
     </GROUP>
+    <GROUP id="{9878FC32-2357-2B96-FEEA-0C535E696F5B}" name="Resources">
+      <FILE id="npQUcA" name="dv_helmet.png" compile="0" resource="1" file="../dv_helmet.png"/>
+    </GROUP>
   </MAINGROUP>
   <EXPORTFORMATS>
     <XCODE_MAC targetFolder="Builds/MacOSX">
@@ -27,20 +30,20 @@
         <CONFIGURATION name="Release" isDebug="0" optimisation="3" targetName="Shifter"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
-        <MODULEPATH id="juce_core" path="../../../../../../juce-grapefruit-osx/modules"/>
-        <MODULEPATH id="juce_events" path="../../../../../../juce-grapefruit-osx/modules"/>
-        <MODULEPATH id="juce_graphics" path="../../../../../../juce-grapefruit-osx/modules"/>
-        <MODULEPATH id="juce_data_structures" path="../../../../../../juce-grapefruit-osx/modules"/>
-        <MODULEPATH id="juce_gui_basics" path="../../../../../../juce-grapefruit-osx/modules"/>
-        <MODULEPATH id="juce_gui_extra" path="../../../../../../juce-grapefruit-osx/modules"/>
-        <MODULEPATH id="juce_cryptography" path="../../../../../../juce-grapefruit-osx/modules"/>
-        <MODULEPATH id="juce_video" path="../../../../../../juce-grapefruit-osx/modules"/>
-        <MODULEPATH id="juce_opengl" path="../../../../../../juce-grapefruit-osx/modules"/>
-        <MODULEPATH id="juce_audio_basics" path="../../../../../../juce-grapefruit-osx/modules"/>
-        <MODULEPATH id="juce_audio_devices" path="../../../../../../juce-grapefruit-osx/modules"/>
-        <MODULEPATH id="juce_audio_formats" path="../../../../../../juce-grapefruit-osx/modules"/>
-        <MODULEPATH id="juce_audio_processors" path="../../../../../../juce-grapefruit-osx/modules"/>
-        <MODULEPATH id="juce_audio_plugin_client" path="../../../../../../juce-grapefruit-osx/modules"/>
+        <MODULEPATH id="juce_core" path="../../../Libraries/JUCE/modules"/>
+        <MODULEPATH id="juce_events" path="../../../Libraries/JUCE/modules"/>
+        <MODULEPATH id="juce_graphics" path="../../../Libraries/JUCE/modules"/>
+        <MODULEPATH id="juce_data_structures" path="../../../Libraries/JUCE/modules"/>
+        <MODULEPATH id="juce_gui_basics" path="../../../Libraries/JUCE/modules"/>
+        <MODULEPATH id="juce_gui_extra" path="../../../Libraries/JUCE/modules"/>
+        <MODULEPATH id="juce_cryptography" path="../../../Libraries/JUCE/modules"/>
+        <MODULEPATH id="juce_video" path="../../../Libraries/JUCE/modules"/>
+        <MODULEPATH id="juce_opengl" path="../../../Libraries/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_basics" path="../../../Libraries/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_devices" path="../../../Libraries/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_formats" path="../../../Libraries/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_processors" path="../../../Libraries/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_plugin_client" path="../../../Libraries/JUCE/modules"/>
       </MODULEPATHS>
     </XCODE_MAC>
     <VS2015 targetFolder="Builds/VisualStudio2015">

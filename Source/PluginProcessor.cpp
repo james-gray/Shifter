@@ -12,12 +12,7 @@
 #include "PluginEditor.h"
 
 //==============================================================================
-ShifterAudioProcessor::ShifterAudioProcessor() :
-    overlapWindowBuffer_(nullptr), overlapFftBuffer_(nullptr),
-    blockFftBuffer_(nullptr), analysisWindowFunction_(nullptr),
-    fft_(nullptr), ifft_(nullptr), outputBuffer_(nullptr),
-    resampledOverlapBuffer_(nullptr), resampledBlockBuffer_(nullptr),
-    preparedToPlay_(false)
+ShifterAudioProcessor::ShifterAudioProcessor() : preparedToPlay_(false)
 {
 }
 

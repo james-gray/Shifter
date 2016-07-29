@@ -90,6 +90,8 @@ private:
     // prepareToPlay.
     std::shared_ptr<AudioBuffer<float>> analysisWindowFunction_;
 
+    constexpr static const double pi_ = 3.141592653589793238462643383279502884197;
+
     int analysisWindowLength_;
     int resampledBufferLength_;
     int blockSize_;

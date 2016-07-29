@@ -147,7 +147,7 @@ void ShifterAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBloc
     analysisWindowLength_ = blockSize_ = samplesPerBlock;
 
     for (int i = 0; i < analysisWindowLength_; ++i) {
-        analysisWindowFunction_->setSample(0, i, 0.5 * (1.0 - cos(2.0 * M_PI * (float) i / analysisWindowLength_)));
+        analysisWindowFunction_->setSample(0, i, 0.5 * (1.0 - cos(2.0 * pi_ * (float) i / analysisWindowLength_)));
     }
 
     // 2D Array for storing phase from previous block for each channel, initialize to 0
@@ -321,7 +321,7 @@ void ShifterAudioProcessor::adjustPhaseForPitchShift(float* fft, int channel) {
         float phase = atan2(im, re);
 
         // Calculate the frequency of this bin
-        float frequency = 2.0 * M_PI * static_cast<float>(i) * analysisHopSize_ / blockSize_;
+        float frequency = 2.0 * pi_ * static_cast<float>(i) * analysisHopSize_ / blockSize_;
 
         // Calculate the phase deviation for this hop
         float deviationPhase = frequency + princArg(phase - prevAbsolutePhase_[channel][i] - frequency);
@@ -356,7 +356,7 @@ void ShifterAudioProcessor::resampleAndWindowBuffer(float* inBuffer, float* outB
         // If we aren't transposing at all it seems to be much higher quality
         // without windowing.
         if (!((int) coarsePitch_ == 0 && (int) (100.0 * finePitch_) == 0)) {
-            outBuffer[i] *= 0.5 * (1.0 - cos(2.0 * M_PI * (float) i / outputLength));
+            outBuffer[i] *= 0.5 * (1.0 - cos(2.0 * pi_ * (float) i / outputLength));
         }
     }
 }
@@ -365,9 +365,9 @@ void ShifterAudioProcessor::resampleAndWindowBuffer(float* inBuffer, float* outB
 float ShifterAudioProcessor::princArg(float phase)
 {
     if (phase >= 0) {
-        return std::fmod(phase + M_PI, 2 * M_PI) - M_PI;
+        return std::fmod(phase + pi_, 2 * pi_) - pi_;
     } else {
-        return std::fmod(phase + M_PI, -2 * M_PI) + M_PI;
+        return std::fmod(phase + pi_, -2 * pi_) + pi_;
     }
 }
 

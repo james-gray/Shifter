@@ -245,10 +245,10 @@
  #define JucePlugin_Build_STANDALONE       0
 #endif
 #ifndef  JucePlugin_Name
- #define JucePlugin_Name                   "Shifter"
+ #define JucePlugin_Name                   "Vaderizer"
 #endif
 #ifndef  JucePlugin_Desc
- #define JucePlugin_Desc                   "Shifter"
+ #define JucePlugin_Desc                   "Vaderizer"
 #endif
 #ifndef  JucePlugin_Manufacturer
  #define JucePlugin_Manufacturer           "jjh"
@@ -302,16 +302,16 @@
  #define JucePlugin_AUSubType              JucePlugin_PluginCode
 #endif
 #ifndef  JucePlugin_AUExportPrefix
- #define JucePlugin_AUExportPrefix         ShifterAU
+ #define JucePlugin_AUExportPrefix         VaderizerAU
 #endif
 #ifndef  JucePlugin_AUExportPrefixQuoted
- #define JucePlugin_AUExportPrefixQuoted   "ShifterAU"
+ #define JucePlugin_AUExportPrefixQuoted   "VaderizerAU"
 #endif
 #ifndef  JucePlugin_AUManufacturerCode
  #define JucePlugin_AUManufacturerCode     JucePlugin_ManufacturerCode
 #endif
 #ifndef  JucePlugin_CFBundleIdentifier
- #define JucePlugin_CFBundleIdentifier     com.jjh.Shifter
+ #define JucePlugin_CFBundleIdentifier     com.jjh.Vaderizer
 #endif
 #ifndef  JucePlugin_RTASCategory
  #define JucePlugin_RTASCategory           ePlugInCategory_None
@@ -329,7 +329,7 @@
  #define JucePlugin_RTASDisableMultiMono   0
 #endif
 #ifndef  JucePlugin_AAXIdentifier
- #define JucePlugin_AAXIdentifier          com.jjh.Shifter
+ #define JucePlugin_AAXIdentifier          com.jjh.Vaderizer
 #endif
 #ifndef  JucePlugin_AAXManufacturerCode
  #define JucePlugin_AAXManufacturerCode    JucePlugin_ManufacturerCode

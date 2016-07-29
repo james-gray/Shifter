@@ -12,21 +12,21 @@
 #include "PluginEditor.h"
 
 //==============================================================================
-ShifterAudioProcessor::ShifterAudioProcessor() : preparedToPlay_(false)
+VaderizerAudioProcessor::VaderizerAudioProcessor() : preparedToPlay_(false)
 {
 }
 
-ShifterAudioProcessor::~ShifterAudioProcessor()
+VaderizerAudioProcessor::~VaderizerAudioProcessor()
 {
 }
 
 //==============================================================================
-const String ShifterAudioProcessor::getName() const
+const String VaderizerAudioProcessor::getName() const
 {
     return JucePlugin_Name;
 }
 
-bool ShifterAudioProcessor::acceptsMidi() const
+bool VaderizerAudioProcessor::acceptsMidi() const
 {
    #if JucePlugin_WantsMidiInput
     return true;
@@ -35,7 +35,7 @@ bool ShifterAudioProcessor::acceptsMidi() const
    #endif
 }
 
-bool ShifterAudioProcessor::producesMidi() const
+bool VaderizerAudioProcessor::producesMidi() const
 {
    #if JucePlugin_ProducesMidiOutput
     return true;
@@ -44,59 +44,59 @@ bool ShifterAudioProcessor::producesMidi() const
    #endif
 }
 
-double ShifterAudioProcessor::getTailLengthSeconds() const
+double VaderizerAudioProcessor::getTailLengthSeconds() const
 {
     return 0.0;
 }
 
-int ShifterAudioProcessor::getNumPrograms()
+int VaderizerAudioProcessor::getNumPrograms()
 {
     return 1;   // NB: some hosts don't cope very well if you tell them there are 0 programs,
                 // so this should be at least 1, even if you're not really implementing programs.
 }
 
-int ShifterAudioProcessor::getCurrentProgram()
+int VaderizerAudioProcessor::getCurrentProgram()
 {
     return 0;
 }
 
-void ShifterAudioProcessor::setCurrentProgram (int index)
+void VaderizerAudioProcessor::setCurrentProgram (int index)
 {
 }
 
-const String ShifterAudioProcessor::getProgramName (int index)
+const String VaderizerAudioProcessor::getProgramName (int index)
 {
     return String();
 }
 
-void ShifterAudioProcessor::changeProgramName (int index, const String& newName)
+void VaderizerAudioProcessor::changeProgramName (int index, const String& newName)
 {
 }
 
-float ShifterAudioProcessor::getCoarsePitch() {
+float VaderizerAudioProcessor::getCoarsePitch() {
     return coarsePitch_;
 }
 
-void ShifterAudioProcessor::setCoarsePitch(float coarsePitch) {
+void VaderizerAudioProcessor::setCoarsePitch(float coarsePitch) {
     coarsePitch_ = coarsePitch;
 }
 
-float ShifterAudioProcessor::getFinePitch() {
+float VaderizerAudioProcessor::getFinePitch() {
     return finePitch_;
 }
 
-void ShifterAudioProcessor::setFinePitch(float finePitch) {
+void VaderizerAudioProcessor::setFinePitch(float finePitch) {
     finePitch_ = finePitch;
 }
 
-void ShifterAudioProcessor::updatePitchShift() {
+void VaderizerAudioProcessor::updatePitchShift() {
     pitchShift_ = pow(2.0, (coarsePitch_ + finePitch_)/12.0);
     actualRatio_ = round(pitchShift_ * analysisHopSize_) / analysisHopSize_;
     pitchShiftInv_ = 1/pitchShift_;
     resampledBufferLength_ = floor(pitchShiftInv_ * blockSize_);
 }
 
-void ShifterAudioProcessor::resetPreviousPhaseData() {
+void VaderizerAudioProcessor::resetPreviousPhaseData() {
     for (int i = 0; i<blockSize_; i++) {
         for (int channel=0; channel<getTotalNumInputChannels(); channel++) {
             prevAdjustedPhase_[channel][i] = 0.0;
@@ -106,7 +106,7 @@ void ShifterAudioProcessor::resetPreviousPhaseData() {
 }
 
 //==============================================================================
-void ShifterAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
+void VaderizerAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     preparedToPlay_ = false;
     //const int totalNumInputChannels = getTotalNumInputChannels();
@@ -164,7 +164,7 @@ void ShifterAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBloc
     preparedToPlay_ = true;
 }
 
-void ShifterAudioProcessor::releaseResources()
+void VaderizerAudioProcessor::releaseResources()
 {
     // When playback stops, you can use this as an opportunity to free up any
     // spare memory, etc.
@@ -172,7 +172,7 @@ void ShifterAudioProcessor::releaseResources()
 }
 
 #ifndef JucePlugin_PreferredChannelConfigurations
-bool ShifterAudioProcessor::setPreferredBusArrangement (bool isInput, int bus, const AudioChannelSet& preferredSet)
+bool VaderizerAudioProcessor::setPreferredBusArrangement (bool isInput, int bus, const AudioChannelSet& preferredSet)
 {
     // Reject any bus arrangements that are not compatible with your plugin
 
@@ -196,12 +196,12 @@ bool ShifterAudioProcessor::setPreferredBusArrangement (bool isInput, int bus, c
 }
 #endif
 
-void ShifterAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
+void VaderizerAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
 {
     const int totalNumInputChannels  = getTotalNumInputChannels();
     const int totalNumOutputChannels = getTotalNumOutputChannels();
     const int numSamples = buffer.getNumSamples();
-    
+
     if (!preparedToPlay_) {
         buffer.clear();
         return;
@@ -216,7 +216,7 @@ void ShifterAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
     for (int i = totalNumInputChannels; i < totalNumOutputChannels; ++i) {
         buffer.clear (i, 0, numSamples);
     }
-    
+
     for (int channel = 0; channel < totalNumInputChannels; ++channel) {
         // ***************
         // * INPUT STAGE *
@@ -275,7 +275,7 @@ void ShifterAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
         // Resample and write the phase-adjusted overlap and block data to their buffers
         resampleAndWindowBuffer(overlapFft, resampledOverlapBuffer, resampledBufferLength_);
         resampleAndWindowBuffer(blockFft, resampledBlockBuffer, resampledBufferLength_);
-        
+
         // Write the resampled overlap and block data to the output buffer
         for (int i = 0, j = analysisHopSize_; i < resampledBufferLength_; ++i, ++j) {
             outputBuffer[i] += resampledOverlapBuffer[i];
@@ -285,12 +285,12 @@ void ShifterAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
         // Clear the resampled buffers for this channel
         resampledOverlapBuffer_->clear(channel, 0, resampledOverlapBuffer_->getNumSamples());
         resampledBlockBuffer_->clear(channel, 0, resampledBlockBuffer_->getNumSamples());
-        
+
         // Output the samples for this block to the channel stream.
         for (int i = 0; i < numSamples; ++i) {
             channelData[i] = outputBuffer[i];
         }
-        
+
         // Save any output buffer samples that we have not yet output into the first
         // part of the output buffer, so they will be output on the next block after
         // additional output is processed and added to them.
@@ -310,7 +310,7 @@ void ShifterAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer&
 }
 
 
-void ShifterAudioProcessor::adjustPhaseForPitchShift(float* fft, int channel) {
+void VaderizerAudioProcessor::adjustPhaseForPitchShift(float* fft, int channel) {
     for (int i = 0, fftIndex = 0; i < blockSize_; ++i, fftIndex = i * 2) {
         // Extract real and imaginary components from the fft
         float re = fft[fftIndex];
@@ -337,7 +337,7 @@ void ShifterAudioProcessor::adjustPhaseForPitchShift(float* fft, int channel) {
     }
 }
 
-void ShifterAudioProcessor::resampleAndWindowBuffer(float* inBuffer, float* outBuffer, float outputLength) {
+void VaderizerAudioProcessor::resampleAndWindowBuffer(float* inBuffer, float* outBuffer, float outputLength) {
     for (int i = 0; i < outputLength; i++) {
         // Get the fractional index of the sample in question
         float sample = (i * blockSize_) / outputLength;
@@ -362,7 +362,7 @@ void ShifterAudioProcessor::resampleAndWindowBuffer(float* inBuffer, float* outB
 }
 
 // Principal argument
-float ShifterAudioProcessor::princArg(float phase)
+float VaderizerAudioProcessor::princArg(float phase)
 {
     if (phase >= 0) {
         return std::fmod(phase + pi_, 2 * pi_) - pi_;
@@ -372,25 +372,25 @@ float ShifterAudioProcessor::princArg(float phase)
 }
 
 //==============================================================================
-bool ShifterAudioProcessor::hasEditor() const
+bool VaderizerAudioProcessor::hasEditor() const
 {
     return true; // (change this to false if you choose to not supply an editor)
 }
 
-AudioProcessorEditor* ShifterAudioProcessor::createEditor()
+AudioProcessorEditor* VaderizerAudioProcessor::createEditor()
 {
-    return new ShifterAudioProcessorEditor (*this);
+    return new VaderizerAudioProcessorEditor (*this);
 }
 
 //==============================================================================
-void ShifterAudioProcessor::getStateInformation (MemoryBlock& destData)
+void VaderizerAudioProcessor::getStateInformation (MemoryBlock& destData)
 {
     // You should use this method to store your parameters in the memory block.
     // You could do that either as raw data, or use the XML or ValueTree classes
     // as intermediaries to make it easy to save and load complex data.
 }
 
-void ShifterAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
+void VaderizerAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
     // You should use this method to restore your parameters from this memory block,
     // whose contents will have been created by the getStateInformation() call.
@@ -400,5 +400,5 @@ void ShifterAudioProcessor::setStateInformation (const void* data, int sizeInByt
 // This creates new instances of the plugin..
 AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
-    return new ShifterAudioProcessor();
+    return new VaderizerAudioProcessor();
 }

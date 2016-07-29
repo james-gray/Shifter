@@ -18,12 +18,12 @@
 //==============================================================================
 /**
 */
-class ShifterAudioProcessorEditor  : public AudioProcessorEditor,
+class VaderizerAudioProcessorEditor  : public AudioProcessorEditor,
 	private Slider::Listener
 {
 public:
-    ShifterAudioProcessorEditor (ShifterAudioProcessor&);
-    ~ShifterAudioProcessorEditor();
+    VaderizerAudioProcessorEditor (VaderizerAudioProcessor&);
+    ~VaderizerAudioProcessorEditor();
 
     //==============================================================================
     void paint (Graphics&) override;
@@ -31,22 +31,22 @@ public:
 
 private:
 
-    ShifterAudioProcessor& processor;
-    
+    VaderizerAudioProcessor& processor;
+
     // GUI Components
     Slider coarsePitchSlider;
     Label coarsePitchLabel;
     Slider finePitchSlider;
     Label finePitchLabel;
     ImageComponent darthVader;
-    
+
     // Custom font
     Font starWarsFont;
 
 	void sliderValueChanged(Slider* slider) override;
 
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ShifterAudioProcessorEditor)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (VaderizerAudioProcessorEditor)
 };
 
 

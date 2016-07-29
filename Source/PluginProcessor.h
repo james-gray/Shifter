@@ -18,12 +18,12 @@
 //==============================================================================
 /**
 */
-class ShifterAudioProcessor  : public AudioProcessor
+class VaderizerAudioProcessor  : public AudioProcessor
 {
 public:
     //==============================================================================
-    ShifterAudioProcessor();
-    ~ShifterAudioProcessor();
+    VaderizerAudioProcessor();
+    ~VaderizerAudioProcessor();
 
     //==============================================================================
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
@@ -57,7 +57,7 @@ public:
     //==============================================================================
     void getStateInformation (MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
-    
+
     int fftGetSize() {return fftSize_;}
     void adjustPhaseForPitchShift(float*, int);
     void resampleAndWindowBuffer(float*, float*, float);
@@ -72,12 +72,12 @@ public:
 
 private:
     //==============================================================================
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ShifterAudioProcessor)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (VaderizerAudioProcessor)
     // Array holding the samples for even-numbered windows taken from the input.
     // Since samples from more than one block will be used, we need a buffer to
     // store them before processing.
-    
-    
+
+
     std::shared_ptr<AudioBuffer<float>> overlapWindowBuffer_;
 
     // Array holding buffers for taking the FFT of overlap windows.
@@ -103,7 +103,7 @@ private:
     float pitchShift_;
     float pitchShiftInv_;
     float actualRatio_;
-    
+
     bool preparedToPlay_;
 
 
@@ -111,12 +111,12 @@ private:
     std::shared_ptr<FFT> ifft_;
 
     int fftSize_;
-    
+
     // Vectors for storing phase information for each bin corresponding to a channel
     std::vector<std::vector<float>> prevAbsolutePhase_;
     std::vector<std::vector<float>> prevAdjustedPhase_;
 
-    
+
     // Output buffers
     std::shared_ptr<AudioBuffer<float>> outputBuffer_;
     std::shared_ptr<AudioBuffer<float>> resampledOverlapBuffer_;

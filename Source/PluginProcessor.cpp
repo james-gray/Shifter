@@ -127,14 +127,14 @@ void ShifterAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBloc
     overlapFftBuffer_->clear();
     blockFftBuffer_->clear();
 
-    // Set up the Hamming window buffer
+    // Set up the Hann window buffer
     analysisWindowLength_ = blockSize_ = samplesPerBlock;
     synthesisWindowLength_ = floor(pitchShiftInv_ * blockSize_);
     for (int i = 0; i < analysisWindowLength_; ++i) {
-        analysisWindowFunction_->setSample(0, i, 0.54 - 0.46 * cos(2.0 * M_PI * (float) i / analysisWindowLength_));
+        analysisWindowFunction_->setSample(0, i, 0.5 * (1.0 - cos(2.0 * M_PI * (float) i / analysisWindowLength_)));
     }
     for (int i = 0; i < synthesisWindowLength_; ++i) {
-        synthesisWindowFunction_->setSample(0, i, 0.54 - 0.46 * cos(2.0 * M_PI * (float) i / synthesisWindowLength_));
+        synthesisWindowFunction_->setSample(0, i, 0.5 * (1.0 - cos(2.0 * M_PI * (float) i / synthesisWindowLength_)));
     }
 
     // 2D Array for storing phase from previous block for each channel, initialize to 0

@@ -34,7 +34,7 @@ ShifterAudioProcessorEditor::ShifterAudioProcessorEditor (ShifterAudioProcessor&
     // Label for coarse pitch
     coarsePitchLabel.setFont(starWarsFont);
     coarsePitchLabel.setJustificationType(Justification(12));
-    coarsePitchLabel.setText(String("coarse"), dontSendNotification);
+    coarsePitchLabel.setText(String("vaderization"), dontSendNotification);
     coarsePitchLabel.attachToComponent(&coarsePitchSlider, false);
     
     // Set the fine pitch rotary

@@ -18,7 +18,8 @@
 //==============================================================================
 /**
 */
-class ShifterAudioProcessorEditor  : public AudioProcessorEditor
+class ShifterAudioProcessorEditor  : public AudioProcessorEditor,
+	private Slider::Listener
 {
 public:
     ShifterAudioProcessorEditor (ShifterAudioProcessor&);
@@ -33,14 +34,17 @@ private:
     ShifterAudioProcessor& processor;
     
     // GUI Components
-    Slider coarsePitch;
+    Slider coarsePitchSlider;
     Label coarsePitchLabel;
-    Slider finePitch;
+    Slider finePitchSlider;
     Label finePitchLabel;
     ImageComponent darthVader;
     
     // Custom font
     Font starWarsFont;
+
+	void sliderValueChanged(Slider* slider) override;
+
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ShifterAudioProcessorEditor)
 };

@@ -73,6 +73,38 @@ void ShifterAudioProcessor::changeProgramName (int index, const String& newName)
 {
 }
 
+float ShifterAudioProcessor::getCoarsePitch() {
+    return coarsePitch_;
+}
+
+void ShifterAudioProcessor::setCoarsePitch(float coarsePitch) {
+    coarsePitch_ = coarsePitch;
+}
+
+float ShifterAudioProcessor::getFinePitch() {
+    return finePitch_;
+}
+
+void ShifterAudioProcessor::setFinePitch(float finePitch) {
+    finePitch_ = finePitch;
+}
+
+void ShifterAudioProcessor::updatePitchShift() {
+    pitchShift_ = pow(2.0, (coarsePitch_ + finePitch_)/12.0);
+    actualRatio_ = round(pitchShift_ * analysisHopSize_) / analysisHopSize_;
+    pitchShiftInv_ = 1/pitchShift_;
+    resampledBufferLength_ = floor(pitchShiftInv_ * blockSize_);
+}
+
+void ShifterAudioProcessor::resetPreviousPhaseData() {
+    for (int i = 0; i<blockSize_; i++) {
+        for (int channel=0; channel<getTotalNumInputChannels(); channel++) {
+            prevAdjustedPhase_[channel][i] = 0.0;
+            prevAbsolutePhase_[channel][i] = 0.0;
+        }
+    }
+}
+
 //==============================================================================
 void ShifterAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
@@ -95,17 +127,13 @@ void ShifterAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBloc
     blockFftBuffer_.reset(new AudioBuffer<float>(totalNumInputChannels, samplesPerBlock * 2));
 
     // Allocate storage for output buffers.
-    resampledOverlapBuffer_.reset(new AudioBuffer<float>(totalNumInputChannels, samplesPerBlock * 4));
-    resampledBlockBuffer_.reset(new AudioBuffer<float>(totalNumInputChannels, samplesPerBlock * 4));
+    resampledOverlapBuffer_.reset(new AudioBuffer<float>(totalNumInputChannels, samplesPerBlock * 3));
+    resampledBlockBuffer_.reset(new AudioBuffer<float>(totalNumInputChannels, samplesPerBlock * 3));
 
-    outputBuffer_.reset(new AudioBuffer<float>(totalNumInputChannels, samplesPerBlock * 4));
+    outputBuffer_.reset(new AudioBuffer<float>(totalNumInputChannels, samplesPerBlock * 5));
 
     // Initial pitch adjustment ratio
     analysisHopSize_ = samplesPerBlock / 2;
-
-    pitchShift_ = pow(2.0, 1.0/12.0);
-    actualRatio_ = round(pitchShift_ * analysisHopSize_) / analysisHopSize_;
-    pitchShiftInv_ = 1/pitchShift_;
 
     //zero out
     outputBuffer_->clear();
@@ -117,7 +145,7 @@ void ShifterAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBloc
 
     // Set up the Hann window buffer
     analysisWindowLength_ = blockSize_ = samplesPerBlock;
-    resampledBufferLength_ = floor(pitchShiftInv_ * blockSize_);
+
     for (int i = 0; i < analysisWindowLength_; ++i) {
         analysisWindowFunction_->setSample(0, i, 0.5 * (1.0 - cos(2.0 * M_PI * (float) i / analysisWindowLength_)));
     }
@@ -127,7 +155,12 @@ void ShifterAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBloc
         prevAbsolutePhase_.emplace_back(blockSize_, 0.0);
         prevAdjustedPhase_.emplace_back(blockSize_, 0.0);
     }
-    
+
+    // Update the pitch shift values
+    coarsePitch_ = 0.0;
+    finePitch_ = 0.0;
+    updatePitchShift();
+
     preparedToPlay_ = true;
 }
 
@@ -307,7 +340,7 @@ void ShifterAudioProcessor::adjustPhaseForPitchShift(float* fft, int channel) {
 void ShifterAudioProcessor::resampleAndWindowBuffer(float* inBuffer, float* outBuffer, float outputLength) {
     for (int i = 0; i < outputLength; i++) {
         // Get the fractional index of the sample in question
-        float sample = i * blockSize_ / outputLength;
+        float sample = (i * blockSize_) / outputLength;
 
         // Get the integer indices of the samples around our fractional sample
         int prevSample = floor(sample);
@@ -319,8 +352,12 @@ void ShifterAudioProcessor::resampleAndWindowBuffer(float* inBuffer, float* outB
         // Perform linear interpolation on the two integer indices
         outBuffer[i] = (inBuffer[prevSample] * (1.0 - frac)) + (inBuffer[nextSample] * frac);
 
-        // Window the buffer
-        outBuffer[i] *= 0.5 * (1.0 - cos(2.0 * M_PI * (float) i / outputLength));
+        // Window the buffer if any transposition is being applied.
+        // If we aren't transposing at all it seems to be much higher quality
+        // without windowing.
+        if (!((int) coarsePitch_ == 0 && (int) (100.0 * finePitch_) == 0)) {
+            outBuffer[i] *= 0.5 * (1.0 - cos(2.0 * M_PI * (float) i / outputLength));
+        }
     }
 }
 

@@ -319,16 +319,13 @@ void ShifterAudioProcessor::resampleBuffer(float* inBuffer, float* outBuffer, fl
 
         // Get the integer indices of the samples around our fractional sample
         int prevSample = floor(sample);
-        int nextSample = prevSample + 1;
+        int nextSample = (prevSample + 1) % blockSize_;
 
         // Calculate the fractional component
         float frac = sample - (float)prevSample;
 
         // Perform linear interpolation on the two integer indices
-        outBuffer[i] = (inBuffer[prevSample] * (1.0 - frac));
-        if (nextSample < blockSize_) {
-            outBuffer[i] += inBuffer[nextSample] * frac;
-        }
+        outBuffer[i] = (inBuffer[prevSample] * (1.0 - frac)) + (inBuffer[nextSample] * frac);
     }
 }
 

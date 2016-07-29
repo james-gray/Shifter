@@ -127,10 +127,10 @@ void ShifterAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBloc
     blockFftBuffer_.reset(new AudioBuffer<float>(totalNumInputChannels, samplesPerBlock * 2));
 
     // Allocate storage for output buffers.
-    resampledOverlapBuffer_.reset(new AudioBuffer<float>(totalNumInputChannels, samplesPerBlock * 2));
-    resampledBlockBuffer_.reset(new AudioBuffer<float>(totalNumInputChannels, samplesPerBlock * 2));
+    resampledOverlapBuffer_.reset(new AudioBuffer<float>(totalNumInputChannels, samplesPerBlock * 3));
+    resampledBlockBuffer_.reset(new AudioBuffer<float>(totalNumInputChannels, samplesPerBlock * 3));
 
-    outputBuffer_.reset(new AudioBuffer<float>(totalNumInputChannels, samplesPerBlock * 4));
+    outputBuffer_.reset(new AudioBuffer<float>(totalNumInputChannels, samplesPerBlock * 5));
 
     // Initial pitch adjustment ratio
     analysisHopSize_ = samplesPerBlock / 2;

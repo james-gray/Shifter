@@ -69,6 +69,9 @@ VaderizerAudioProcessorEditor::VaderizerAudioProcessorEditor (VaderizerAudioProc
 	finePitchSlider.addListener(this);
     addAndMakeVisible(&finePitchSlider);
     addAndMakeVisible(&finePitchLabel);
+    
+    // Setup callback timer
+    startTimer(50);
 }
 
 VaderizerAudioProcessorEditor::~VaderizerAudioProcessorEditor()
@@ -99,12 +102,17 @@ void VaderizerAudioProcessorEditor::resized()
 void VaderizerAudioProcessorEditor::sliderValueChanged(Slider* slider)
 {
 	if (slider == &coarsePitchSlider) {
-		processor.setCoarsePitch((float) -coarsePitchSlider.getValue());
+        processor.setParameterNotifyingHost(VaderizerAudioProcessor::coarsePitchParam,
+                                            static_cast<float>(-coarsePitchSlider.getValue()));
 	}
 	else if (slider == &finePitchSlider) {
-		processor.setFinePitch((float) finePitchSlider.getValue() / 100.0);
-
+        processor.setParameterNotifyingHost(VaderizerAudioProcessor::finePitchParam,
+                                            static_cast<float>(finePitchSlider.getValue() / 100.0f));
 	}
-  processor.updatePitchShift();
-  processor.resetPreviousPhaseData();
+}
+
+void VaderizerAudioProcessorEditor::timerCallback()
+{
+    coarsePitchSlider.setValue(-processor.getParameter(VaderizerAudioProcessor::coarsePitchParam));
+    finePitchSlider.setValue(processor.getParameter(VaderizerAudioProcessor::finePitchParam) * 100.0f);
 }

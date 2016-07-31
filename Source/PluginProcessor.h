@@ -63,12 +63,22 @@ public:
     void resampleAndWindowBuffer(float*, float*, float);
     float princArg(float);
 
-    float getCoarsePitch();
-    void setCoarsePitch(float);
-    float getFinePitch();
-    void setFinePitch(float);
     void updatePitchShift();
     void resetPreviousPhaseData();
+    
+    int getNumParameters() override;
+    
+    const String getParameterName(int index) override;
+    const String getParameterText(int index) override;
+    
+    float getParameter(int index) override;
+    void setParameter(int index, float value) override;
+    
+    enum Parameters {
+        coarsePitchParam,
+        finePitchParam,
+        numParameters
+    };
 
 private:
     //==============================================================================

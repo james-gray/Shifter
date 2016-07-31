@@ -19,13 +19,16 @@
 /**
 */
 class VaderizerAudioProcessorEditor  : public AudioProcessorEditor,
-	private Slider::Listener
+	public Slider::Listener, public Timer
 {
 public:
     VaderizerAudioProcessorEditor (VaderizerAudioProcessor&);
     ~VaderizerAudioProcessorEditor();
 
     //==============================================================================
+    // Update GUI parameters on timer callback (make sure UI reflects internal state)
+    void timerCallback() override;
+
     void paint (Graphics&) override;
     void resized() override;
 
@@ -43,6 +46,7 @@ private:
     // Custom font
     Font starWarsFont;
 
+    // Update internal parameters on GUI change
 	void sliderValueChanged(Slider* slider) override;
 
 

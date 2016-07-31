@@ -73,21 +73,61 @@ void VaderizerAudioProcessor::changeProgramName (int index, const String& newNam
 {
 }
 
-float VaderizerAudioProcessor::getCoarsePitch() {
-    return coarsePitch_;
+int VaderizerAudioProcessor::getNumParameters()
+{
+    return numParameters;
 }
 
-void VaderizerAudioProcessor::setCoarsePitch(float coarsePitch) {
-    coarsePitch_ = coarsePitch;
+const String VaderizerAudioProcessor::getParameterName(int index)
+{
+    switch (index) {
+        case coarsePitchParam:  return String("Vaderization");
+        case finePitchParam:    return String("Sith Factor");
+        default:
+            break;
+    }
+    
+    return String::empty;
 }
 
-float VaderizerAudioProcessor::getFinePitch() {
-    return finePitch_;
+const String VaderizerAudioProcessor::getParameterText(int index)
+{
+    return String(getParameter(index), /* Max chars */ 2);
 }
 
-void VaderizerAudioProcessor::setFinePitch(float finePitch) {
-    finePitch_ = finePitch;
+float VaderizerAudioProcessor::getParameter(int index)
+{
+    switch (index) {
+        case coarsePitchParam:
+            return coarsePitch_;
+            
+        case finePitchParam:
+            return finePitch_;
+            
+        default:
+            return 0.0f;
+    }
 }
+
+void VaderizerAudioProcessor::setParameter(int index, float value)
+{
+    switch(index)
+    {
+        case coarsePitchParam:
+            coarsePitch_ = value;
+            updatePitchShift();
+            resetPreviousPhaseData();
+            break;
+
+        case finePitchParam:
+            finePitch_ = value;
+            updatePitchShift();
+            resetPreviousPhaseData();
+            break;
+    }
+}
+
+//=============================================================================
 
 void VaderizerAudioProcessor::updatePitchShift() {
     pitchShift_ = pow(2.0, (coarsePitch_ + finePitch_)/12.0);
@@ -216,7 +256,7 @@ void VaderizerAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffe
     for (int i = totalNumInputChannels; i < totalNumOutputChannels; ++i) {
         buffer.clear (i, 0, numSamples);
     }
-
+    
     for (int channel = 0; channel < totalNumInputChannels; ++channel) {
         // ***************
         // * INPUT STAGE *
@@ -224,7 +264,7 @@ void VaderizerAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffe
 
         // Raw samples from the current block.
         float* channelData = buffer.getWritePointer(channel);
-
+        
         // Raw pointers to the overlap buffer and FFT buffers for the current
         // channel.
         float* overlapBuffer = overlapWindowBuffer_->getWritePointer(channel);
@@ -255,7 +295,7 @@ void VaderizerAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffe
         for (int i = 0; i < analysisHopSize_; ++i) {
             overlapBuffer[i] = channelData[i + analysisHopSize_];
         }
-
+        
         // Take the FFT of the overlap buffer AND the current block.
         fft_->performRealOnlyForwardTransform(overlapFft);
         fft_->performRealOnlyForwardTransform(blockFft);

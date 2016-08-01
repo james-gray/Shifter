@@ -58,36 +58,38 @@ public:
     void getStateInformation (MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
+    //==============================================================================
+    // Helper functions for implementing pitch shift algorithm
     int fftGetSize() {return fftSize_;}
     void adjustPhaseForPitchShift(float*, int);
     void resampleAndWindowBuffer(float*, float*, float);
     float princArg(float);
 
+    //==============================================================================
+    // Override set parameter to call updatePitchShift
+    // and resetPreviousPhaseData on pitch change
+    void setParameter(int index, float newValue) override;
+    
+    // These handle the conversion from the UI parameter and the
+    // value we actually need to use for the processing
+    float getActualCoarsePitch();
+    float getActualFinePitch();
+
+    //==============================================================================
+    // Called when the coarse or fine pitch has changed
     void updatePitchShift();
     void resetPreviousPhaseData();
-    
-    int getNumParameters() override;
-    
-    const String getParameterName(int index) override;
-    const String getParameterText(int index) override;
-    
-    float getParameter(int index) override;
-    void setParameter(int index, float value) override;
-    
-    enum Parameters {
-        coarsePitchParam,
-        finePitchParam,
-        numParameters
-    };
+
+    //==============================================================================
+    // User adjustable parameters
+    AudioParameterFloat* coarsePitch_;
+    AudioParameterFloat* finePitch_;
 
 private:
     //==============================================================================
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (VaderizerAudioProcessor)
     // Array holding the samples for even-numbered windows taken from the input.
     // Since samples from more than one block will be used, we need a buffer to
     // store them before processing.
-
-
     std::shared_ptr<AudioBuffer<float>> overlapWindowBuffer_;
 
     // Array holding buffers for taking the FFT of overlap windows.
@@ -100,37 +102,41 @@ private:
     // prepareToPlay.
     std::shared_ptr<AudioBuffer<float>> analysisWindowFunction_;
 
+    // Own definition of PI for windows support
     constexpr static const double pi_ = 3.141592653589793238462643383279502884197;
 
+    // Buffer lenghts
     int analysisWindowLength_;
     int resampledBufferLength_;
     int blockSize_;
     int analysisHopSize_;
+    
+    // Shifting ratios
     float shiftRatio_;
-
-    float coarsePitch_;
-    float finePitch_;
     float pitchShift_;
     float pitchShiftInv_;
     float actualRatio_;
 
+    // Will be true once all th buffers and FFT is setuo
     bool preparedToPlay_;
 
-
+    // Manager pointers to FFTs
     std::shared_ptr<FFT> fft_;
     std::shared_ptr<FFT> ifft_;
 
+    // Power of FFT size (ie, actual FFT length is 2^fftSize_)
     int fftSize_;
 
     // Vectors for storing phase information for each bin corresponding to a channel
     std::vector<std::vector<float>> prevAbsolutePhase_;
     std::vector<std::vector<float>> prevAdjustedPhase_;
 
-
     // Output buffers
     std::shared_ptr<AudioBuffer<float>> outputBuffer_;
     std::shared_ptr<AudioBuffer<float>> resampledOverlapBuffer_;
     std::shared_ptr<AudioBuffer<float>> resampledBlockBuffer_;
+
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (VaderizerAudioProcessor)
 };
 
 

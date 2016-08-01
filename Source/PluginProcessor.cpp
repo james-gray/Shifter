@@ -12,8 +12,24 @@
 #include "PluginEditor.h"
 
 //==============================================================================
-VaderizerAudioProcessor::VaderizerAudioProcessor() : preparedToPlay_(false)
+VaderizerAudioProcessor::VaderizerAudioProcessor() :
+    coarsePitch_(nullptr), finePitch_(nullptr), preparedToPlay_(false)
 {
+    // Register the coarse pitch parameter
+    addParameter(coarsePitch_ = new AudioParameterFloat(
+        "coarsePitchParam",
+        "Vaderization",
+        NormalisableRange<float>(0, 12, 1),
+        0
+    ));
+    
+    // Register the fine pitch parameter
+    addParameter(finePitch_ = new AudioParameterFloat(
+        "finePitchParam",
+        "Sith Factor",
+        NormalisableRange<float>(-50, 50, 1),
+        0
+    ));
 }
 
 VaderizerAudioProcessor::~VaderizerAudioProcessor()
@@ -73,64 +89,29 @@ void VaderizerAudioProcessor::changeProgramName (int index, const String& newNam
 {
 }
 
-int VaderizerAudioProcessor::getNumParameters()
-{
-    return numParameters;
-}
+//==============================================================================
 
-const String VaderizerAudioProcessor::getParameterName(int index)
+void VaderizerAudioProcessor::setParameter (int index, float newValue)
 {
-    switch (index) {
-        case coarsePitchParam:  return String("Vaderization");
-        case finePitchParam:    return String("Sith Factor");
-        default:
-            break;
+    // If one of the pitch parameters was changed then update pitch shift
+    String paramId = getParameterID(index);
+    if (paramId == "coarsePitchParam" || paramId == "finePitchParam")
+    {
+        updatePitchShift();
+        resetPreviousPhaseData();
     }
     
-    return String::empty;
+    AudioProcessor::setParameter(index, newValue);
 }
 
-const String VaderizerAudioProcessor::getParameterText(int index)
-{
-    return String(getParameter(index), /* Max chars */ 2);
-}
+float VaderizerAudioProcessor::getActualCoarsePitch() {return -coarsePitch_->get();}
 
-float VaderizerAudioProcessor::getParameter(int index)
-{
-    switch (index) {
-        case coarsePitchParam:
-            return coarsePitch_;
-            
-        case finePitchParam:
-            return finePitch_;
-            
-        default:
-            return 0.0f;
-    }
-}
-
-void VaderizerAudioProcessor::setParameter(int index, float value)
-{
-    switch(index)
-    {
-        case coarsePitchParam:
-            coarsePitch_ = value;
-            updatePitchShift();
-            resetPreviousPhaseData();
-            break;
-
-        case finePitchParam:
-            finePitch_ = value;
-            updatePitchShift();
-            resetPreviousPhaseData();
-            break;
-    }
-}
+float VaderizerAudioProcessor::getActualFinePitch() {return finePitch_->get() / 100.0f;}
 
 //=============================================================================
 
 void VaderizerAudioProcessor::updatePitchShift() {
-    pitchShift_ = pow(2.0, (coarsePitch_ + finePitch_)/12.0);
+    pitchShift_ = pow(2.0, (getActualCoarsePitch() + getActualFinePitch()) / 12.0);
     actualRatio_ = round(pitchShift_ * analysisHopSize_) / analysisHopSize_;
     pitchShiftInv_ = 1/pitchShift_;
     resampledBufferLength_ = floor(pitchShiftInv_ * blockSize_);
@@ -197,8 +178,6 @@ void VaderizerAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBl
     }
 
     // Update the pitch shift values
-    coarsePitch_ = 0.0;
-    finePitch_ = 0.0;
     updatePitchShift();
 
     preparedToPlay_ = true;
@@ -395,7 +374,9 @@ void VaderizerAudioProcessor::resampleAndWindowBuffer(float* inBuffer, float* ou
         // Window the buffer if any transposition is being applied.
         // If we aren't transposing at all it seems to be much higher quality
         // without windowing.
-        if (!((int) coarsePitch_ == 0 && (int) (100.0 * finePitch_) == 0)) {
+        if (!(static_cast<int>(getActualCoarsePitch()) == 0 &&
+                static_cast<int>(getActualFinePitch()) == 0)) {
+
             outBuffer[i] *= 0.5 * (1.0 - cos(2.0 * pi_ * (float) i / outputLength));
         }
     }
@@ -425,15 +406,38 @@ AudioProcessorEditor* VaderizerAudioProcessor::createEditor()
 //==============================================================================
 void VaderizerAudioProcessor::getStateInformation (MemoryBlock& destData)
 {
-    // You should use this method to store your parameters in the memory block.
-    // You could do that either as raw data, or use the XML or ValueTree classes
-    // as intermediaries to make it easy to save and load complex data.
+    XmlElement xml ("VADERIZER_SETTINGS");
+    
+    xml.setAttribute("coarsePitch", coarsePitch_->get());
+    xml.setAttribute("finePitch", finePitch_->get());
+    
+    // Store the values of all our parameters, using their param ID as the XML attribute
+    for (int i = 0; i < getNumParameters(); ++i)
+        if (AudioProcessorParameterWithID* p = dynamic_cast<AudioProcessorParameterWithID*> (getParameters().getUnchecked(i)))
+            xml.setAttribute (p->paramID, p->getValue());
+    
+    // Save XML as binary
+    copyXmlToBinary (xml, destData);
 }
 
 void VaderizerAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
-    // You should use this method to restore your parameters from this memory block,
-    // whose contents will have been created by the getStateInformation() call.
+    // Load parameters from saved xml state
+    ScopedPointer<XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
+    
+    if (xmlState != nullptr)
+    {
+        if (xmlState->hasTagName ("VADERIZER_SETTINGS"))
+        {
+            xmlState->getIntAttribute("coarsePitch", *coarsePitch_);
+            xmlState->getIntAttribute("finePitch", *finePitch_);
+
+            // Reload parameters
+            for (int i = 0; i < getNumParameters(); ++i)
+                if (AudioProcessorParameterWithID* p = dynamic_cast<AudioProcessorParameterWithID*> (getParameters().getUnchecked(i)))
+                    p->setValueNotifyingHost ((float) xmlState->getDoubleAttribute (p->paramID, p->getValue()));
+        }
+    }
 }
 
 //==============================================================================

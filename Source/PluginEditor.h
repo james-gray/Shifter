@@ -13,41 +13,35 @@
 
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "PluginProcessor.h"
+#include <memory>
 
 
 //==============================================================================
 /**
 */
-class VaderizerAudioProcessorEditor  : public AudioProcessorEditor,
-	public Slider::Listener, public Timer
+class VaderizerAudioProcessorEditor  : public AudioProcessorEditor
 {
 public:
     VaderizerAudioProcessorEditor (VaderizerAudioProcessor&);
     ~VaderizerAudioProcessorEditor();
 
     //==============================================================================
-    // Update GUI parameters on timer callback (make sure UI reflects internal state)
-    void timerCallback() override;
 
     void paint (Graphics&) override;
     void resized() override;
 
 private:
+    class ParameterSlider;
 
     VaderizerAudioProcessor& processor;
 
     // GUI Components
-    Slider coarsePitchSlider;
-    Label coarsePitchLabel;
-    Slider finePitchSlider;
-    Label finePitchLabel;
+    ScopedPointer<ParameterSlider> coarsePitchSlider, finePitchSlider;
+    Label coarsePitchLabel, finePitchLabel;
     ImageComponent darthVader;
 
     // Custom font
     Font starWarsFont;
-
-    // Update internal parameters on GUI change
-	void sliderValueChanged(Slider* slider) override;
 
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (VaderizerAudioProcessorEditor)

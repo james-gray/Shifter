@@ -25,26 +25,26 @@
     </GROUP>
   </MAINGROUP>
   <EXPORTFORMATS>
-    <XCODE_MAC targetFolder="Builds/MacOSX" vstFolder="">
+    <XCODE_MAC targetFolder="Builds/MacOSX" vstFolder="./VST3 SDK/">
       <CONFIGURATIONS>
         <CONFIGURATION name="Debug" isDebug="1" optimisation="1" targetName="Vaderizer"/>
         <CONFIGURATION name="Release" isDebug="0" optimisation="3" targetName="Vaderizer"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
-        <MODULEPATH id="juce_core" path="/Applications/JUCE/modules"/>
-        <MODULEPATH id="juce_events" path="/Applications/JUCE/modules"/>
-        <MODULEPATH id="juce_graphics" path="/Applications/JUCE/modules"/>
-        <MODULEPATH id="juce_data_structures" path="/Applications/JUCE/modules"/>
-        <MODULEPATH id="juce_gui_basics" path="/Applications/JUCE/modules"/>
-        <MODULEPATH id="juce_gui_extra" path="/Applications/JUCE/modules"/>
-        <MODULEPATH id="juce_cryptography" path="/Applications/JUCE/modules"/>
-        <MODULEPATH id="juce_video" path="/Applications/JUCE/modules"/>
-        <MODULEPATH id="juce_opengl" path="/Applications/JUCE/modules"/>
-        <MODULEPATH id="juce_audio_basics" path="/Applications/JUCE/modules"/>
-        <MODULEPATH id="juce_audio_devices" path="/Applications/JUCE/modules"/>
-        <MODULEPATH id="juce_audio_formats" path="/Applications/JUCE/modules"/>
-        <MODULEPATH id="juce_audio_processors" path="/Applications/JUCE/modules"/>
-        <MODULEPATH id="juce_audio_plugin_client" path="/Applications/JUCE/modules"/>
+        <MODULEPATH id="juce_core" path="./juce/modules/"/>
+        <MODULEPATH id="juce_events" path="./juce/modules/"/>
+        <MODULEPATH id="juce_graphics" path="./juce/modules/"/>
+        <MODULEPATH id="juce_data_structures" path="./juce/modules/"/>
+        <MODULEPATH id="juce_gui_basics" path="./juce/modules/"/>
+        <MODULEPATH id="juce_gui_extra" path="./juce/modules/"/>
+        <MODULEPATH id="juce_cryptography" path="./juce/modules/"/>
+        <MODULEPATH id="juce_video" path="./juce/modules/"/>
+        <MODULEPATH id="juce_opengl" path="./juce/modules/"/>
+        <MODULEPATH id="juce_audio_basics" path="./juce/modules/"/>
+        <MODULEPATH id="juce_audio_devices" path="./juce/modules/"/>
+        <MODULEPATH id="juce_audio_formats" path="./juce/modules/"/>
+        <MODULEPATH id="juce_audio_processors" path="./juce/modules/"/>
+        <MODULEPATH id="juce_audio_plugin_client" path="./juce/modules/"/>
       </MODULEPATHS>
     </XCODE_MAC>
     <VS2015 targetFolder="Builds/VisualStudio2015" vstFolder="">
@@ -55,20 +55,20 @@
                        isDebug="0" optimisation="3" targetName="Vaderizer"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
-        <MODULEPATH id="juce_core" path="../../../../../../juce-grapefruit-osx/modules"/>
-        <MODULEPATH id="juce_events" path="../../../../../../juce-grapefruit-osx/modules"/>
-        <MODULEPATH id="juce_graphics" path="../../../../../../juce-grapefruit-osx/modules"/>
-        <MODULEPATH id="juce_data_structures" path="../../../../../../juce-grapefruit-osx/modules"/>
-        <MODULEPATH id="juce_gui_basics" path="../../../../../../juce-grapefruit-osx/modules"/>
-        <MODULEPATH id="juce_gui_extra" path="../../../../../../juce-grapefruit-osx/modules"/>
-        <MODULEPATH id="juce_cryptography" path="../../../../../../juce-grapefruit-osx/modules"/>
-        <MODULEPATH id="juce_video" path="../../../../../../juce-grapefruit-osx/modules"/>
-        <MODULEPATH id="juce_opengl" path="../../../../../../juce-grapefruit-osx/modules"/>
-        <MODULEPATH id="juce_audio_basics" path="../../../../../../juce-grapefruit-osx/modules"/>
-        <MODULEPATH id="juce_audio_devices" path="../../../../../../juce-grapefruit-osx/modules"/>
-        <MODULEPATH id="juce_audio_formats" path="../../../../../../juce-grapefruit-osx/modules"/>
-        <MODULEPATH id="juce_audio_processors" path="../../../../../../juce-grapefruit-osx/modules"/>
-        <MODULEPATH id="juce_audio_plugin_client" path="../../../../../../juce-grapefruit-osx/modules"/>
+        <MODULEPATH id="juce_core" path=".\juce\modules\"/>
+        <MODULEPATH id="juce_events" path=".\juce\modules\"/>
+        <MODULEPATH id="juce_graphics" path=".\juce\modules\"/>
+        <MODULEPATH id="juce_data_structures" path=".\juce\modules\"/>
+        <MODULEPATH id="juce_gui_basics" path=".\juce\modules\"/>
+        <MODULEPATH id="juce_gui_extra" path=".\juce\modules\"/>
+        <MODULEPATH id="juce_cryptography" path=".\juce\modules\"/>
+        <MODULEPATH id="juce_video" path=".\juce\modules\"/>
+        <MODULEPATH id="juce_opengl" path=".\juce\modules\"/>
+        <MODULEPATH id="juce_audio_basics" path=".\juce\modules\"/>
+        <MODULEPATH id="juce_audio_devices" path=".\juce\modules\"/>
+        <MODULEPATH id="juce_audio_formats" path=".\juce\modules\"/>
+        <MODULEPATH id="juce_audio_processors" path=".\juce\modules\"/>
+        <MODULEPATH id="juce_audio_plugin_client" path=".\juce\modules\"/>
       </MODULEPATHS>
     </VS2015>
   </EXPORTFORMATS>
@@ -89,4 +89,7 @@
     <MODULE id="juce_video" showAllCode="1" useLocalCopy="0"/>
   </MODULES>
   <JUCEOPTIONS JUCE_QUICKTIME="disabled"/>
+  <LIVE_SETTINGS>
+    <OSX headerPath=""/>
+  </LIVE_SETTINGS>
 </JUCERPROJECT>

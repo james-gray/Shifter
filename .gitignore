@@ -33,3 +33,7 @@
 
 # Build folder
 Builds/
+
+# Unzipped dirs
+VST3 SDK/
+juce/

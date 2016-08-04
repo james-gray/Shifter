@@ -27,8 +27,10 @@
   <EXPORTFORMATS>
     <XCODE_MAC targetFolder="Builds/MacOSX" vstFolder="./VST3 SDK/">
       <CONFIGURATIONS>
-        <CONFIGURATION name="Debug" isDebug="1" optimisation="1" targetName="Vaderizer"/>
-        <CONFIGURATION name="Release" isDebug="0" optimisation="3" targetName="Vaderizer"/>
+        <CONFIGURATION name="Debug" isDebug="1" optimisation="1" targetName="Vaderizer"
+                       osxArchitecture="32BitUniversal" stripLocalSymbols="0"/>
+        <CONFIGURATION name="Release" isDebug="0" optimisation="3" targetName="Vaderizer"
+                       osxArchitecture="32BitUniversal"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
         <MODULEPATH id="juce_core" path="./juce/modules/"/>

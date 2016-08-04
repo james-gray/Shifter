@@ -95,7 +95,7 @@ void VaderizerAudioProcessor::setParameter (int index, float newValue)
 {
     // If one of the pitch parameters was changed then update pitch shift
     String paramId = getParameterID(index);
-    if (paramId == "coarsePitchParam" || paramId == "finePitchParam")
+    if ((paramId == "coarsePitchParam" || paramId == "finePitchParam") && preparedToPlay_)
     {
         updatePitchShift();
         resetPreviousPhaseData();

@@ -130,8 +130,7 @@ void VaderizerAudioProcessor::resetPreviousPhaseData() {
 void VaderizerAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     preparedToPlay_ = false;
-    //const int totalNumInputChannels = getTotalNumInputChannels();
-    const int totalNumInputChannels = 2;
+    const int totalNumInputChannels = getTotalNumInputChannels();
 
     // Set the FFT size
     fftSize_ = std::log2(samplesPerBlock);

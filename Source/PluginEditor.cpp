@@ -48,9 +48,6 @@ public:
         updateSliderPos();
     }
     
-    void startedDragging() override     { param.beginChangeGesture(); }
-    void stoppedDragging() override     { param.endChangeGesture();   }
-    
     AudioParameterFloat& param;
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ParameterSlider)
